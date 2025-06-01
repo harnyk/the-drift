@@ -1,0 +1,962 @@
+This file is a merged representation of the entire codebase, combined into a single document by Repomix.
+
+<file_summary>
+This section contains a summary of this file.
+
+<purpose>
+This file contains a packed representation of the entire repository's contents.
+It is designed to be easily consumable by AI systems for analysis, code review,
+or other automated processes.
+</purpose>
+
+<file_format>
+The content is organized as follows:
+1. This summary section
+2. Repository information
+3. Directory structure
+4. Repository files (if enabled)
+4. Repository files, each consisting of:
+  - File path as an attribute
+  - Full contents of the file
+</file_format>
+
+<usage_guidelines>
+- This file should be treated as read-only. Any changes should be made to the
+  original repository files, not this packed version.
+- When processing this file, use the file path to distinguish
+  between different files in the repository.
+- Be aware that this file may contain sensitive information. Handle it with
+  the same level of security as you would the original repository.
+</usage_guidelines>
+
+<notes>
+- Some files may have been excluded based on .gitignore rules and Repomix's configuration
+- Binary files are not included in this packed representation. Please refer to the Repository Structure section for a complete list of file paths, including binary files
+- Files matching patterns in .gitignore are excluded
+- Files matching default ignore patterns are excluded
+- Files are sorted by Git change count (files with more changes are at the bottom)
+</notes>
+
+<additional_info>
+
+</additional_info>
+
+</file_summary>
+
+<directory_structure>
+src/
+  engine/
+    physics/
+      RigidBody2D.ts
+    FixedTimestampIntegrator.ts
+    fromDeg.ts
+    Matrix3.ts
+    Point.ts
+    Renderable.ts
+    Transform.ts
+    Viewport.ts
+    World.ts
+    WorldRenderer.ts
+  game/
+    Car.ts
+    Compass.ts
+    RoadBlock.ts
+    VehicleController.ts
+  main.tsx
+.gitignore
+index.html
+package.json
+postcss.config.js
+tailwind.config.js
+tsconfig.json
+vite.config.ts
+</directory_structure>
+
+<files>
+This section contains the contents of the repository's files.
+
+<file path="src/engine/physics/RigidBody2D.ts">
+import { Point } from '../Point';
+
+export class RigidBody2D {
+    position: Point;
+    velocity: Point;
+    acceleration: Point;
+    force: Point;
+    angle: number;
+    angularVelocity: number;
+    angularForce: number;
+
+    mass: number;
+    momentOfInertia: number; // для вращения (можно пока = 1)
+
+    constructor(
+        position = new Point(0, 0),
+        angle = 0,
+        mass = 1,
+        momentOfInertia = 1
+    ) {
+        this.position = position;
+        this.velocity = new Point(0, 0);
+        this.acceleration = new Point(0, 0);
+        this.force = new Point(0, 0);
+
+        this.angle = angle;
+        this.angularVelocity = 0;
+        this.angularForce = 0;
+
+        this.mass = mass;
+        this.momentOfInertia = momentOfInertia;
+    }
+
+    applyForce(force: Point) {
+        this.force.x += force.x;
+        this.force.y += force.y;
+    }
+
+    applyTorque(torque: number) {
+        this.angularForce += torque;
+    }
+
+    update(dt: number) {
+        // линейная физика
+        this.acceleration.x = this.force.x / this.mass;
+        this.acceleration.y = this.force.y / this.mass;
+
+        this.velocity.x += this.acceleration.x * dt;
+        this.velocity.y += this.acceleration.y * dt;
+
+        this.position.x += this.velocity.x * dt;
+        this.position.y += this.velocity.y * dt;
+
+        // угловая физика
+        const angularAcceleration = this.angularForce / this.momentOfInertia;
+        this.angularVelocity += angularAcceleration * dt;
+        this.angle += this.angularVelocity * dt;
+
+        // сбрасываем силы (одноразовые, как импульс)
+        this.force.x = 0;
+        this.force.y = 0;
+        this.angularForce = 0;
+    }
+}
+</file>
+
+<file path="src/engine/FixedTimestampIntegrator.ts">
+export class FixedTimestepIntegrator {
+    private accumulator = 0;
+    private lastTime = performance.now();
+    private readonly timestep: number;
+
+    constructor(fps = 60) {
+        this.timestep = 1 / fps;
+    }
+
+    update(updateFn: (dt: number) => void) {
+        const now = performance.now();
+        this.accumulator += (now - this.lastTime) / 1000;
+        this.lastTime = now;
+
+        while (this.accumulator >= this.timestep) {
+            updateFn(this.timestep);
+            this.accumulator -= this.timestep;
+        }
+    }
+
+    reset() {
+        this.lastTime = performance.now();
+        this.accumulator = 0;
+    }
+}
+</file>
+
+<file path="src/engine/fromDeg.ts">
+export function fromDeg(degrees: number) {
+    return degrees * (Math.PI / 180);
+}
+</file>
+
+<file path="src/engine/Matrix3.ts">
+import { Point } from "./Point";
+
+
+export class Matrix3 {
+    values: number[];
+
+    constructor(values?: number[]) {
+        this.values = values || [1, 0, 0, 0, 1, 0, 0, 0, 1];
+    }
+
+    static identity() {
+        return new Matrix3();
+    }
+
+    static translation(tx: number, ty: number) {
+        return new Matrix3([1, 0, tx, 0, 1, ty, 0, 0, 1]);
+    }
+
+    static rotation(angleRad: number) {
+        const c = Math.cos(angleRad);
+        const s = Math.sin(angleRad);
+        return new Matrix3([c, -s, 0, s, c, 0, 0, 0, 1]);
+    }
+
+    static scale(sx: number, sy: number) {
+        return new Matrix3([sx, 0, 0, 0, sy, 0, 0, 0, 1]);
+    }
+
+    multiply(other: Matrix3): Matrix3 {
+        const a = this.values;
+        const b = other.values;
+        const r = new Array(9).fill(0);
+
+        for (let row = 0; row < 3; row++) {
+            for (let col = 0; col < 3; col++) {
+                r[row * 3 + col] =
+                    a[row * 3 + 0] * b[0 * 3 + col] +
+                    a[row * 3 + 1] * b[1 * 3 + col] +
+                    a[row * 3 + 2] * b[2 * 3 + col];
+            }
+        }
+
+        return new Matrix3(r);
+    }
+
+    transformPoint(p: Point): Point {
+        const [a, b, c, d, e, f, g, h, i] = this.values;
+        const x = p.x, y = p.y;
+        const newX = a * x + b * y + c;
+        const newY = d * x + e * y + f;
+        return new Point(newX, newY);
+    }
+
+    invert(): Matrix3 {
+        const m = this.values;
+        const [a, b, c, d, e, f, g, h, i] = m;
+
+        const det = a * e * i +
+            b * f * g +
+            c * d * h -
+            c * e * g -
+            b * d * i -
+            a * f * h;
+        if (det === 0) throw new Error('Matrix not invertible');
+
+        const inv = [
+            (e * i - f * h) / det,
+            (c * h - b * i) / det,
+            (b * f - c * e) / det,
+            (f * g - d * i) / det,
+            (a * i - c * g) / det,
+            (c * d - a * f) / det,
+            (d * h - e * g) / det,
+            (b * g - a * h) / det,
+            (a * e - b * d) / det,
+        ];
+
+        return new Matrix3(inv);
+    }
+}
+</file>
+
+<file path="src/engine/Point.ts">
+export class Point {
+    x: number;
+    y: number;
+    constructor(x: number, y: number) {
+        this.x = x;
+        this.y = y;
+    }
+    scale(s: number) {
+        return new Point(this.x * s, this.y * s);
+    }
+    add(p: Point) {
+        return new Point(this.x + p.x, this.y + p.y);
+    }
+}
+</file>
+
+<file path="src/engine/Renderable.ts">
+import { Viewport } from "./Viewport";
+
+
+export interface Renderable {
+    render(ctx: CanvasRenderingContext2D, viewport: Viewport): void;
+}
+</file>
+
+<file path="src/engine/Transform.ts">
+import { Matrix3 } from "./Matrix3";
+import { Point } from "./Point";
+
+
+export class Transform {
+    position: Point;
+    rotation: number; // в радианах
+    scale: Point;
+
+    constructor(
+        position = new Point(0, 0),
+        rotation = 0,
+        scale = new Point(1, 1)
+    ) {
+        this.position = position;
+        this.rotation = rotation;
+        this.scale = scale;
+    }
+
+    get matrix(): Matrix3 {
+        return Matrix3.translation(this.position.x, this.position.y)
+            .multiply(Matrix3.rotation(this.rotation))
+            .multiply(Matrix3.scale(this.scale.x, this.scale.y));
+    }
+
+    applyToPoint(p: Point): Point {
+        return this.matrix.transformPoint(p);
+    }
+}
+</file>
+
+<file path="src/engine/Viewport.ts">
+import { Matrix3 } from "./Matrix3";
+import { Point } from "./Point";
+
+
+export class Viewport {
+    center: Point; // координаты центра камеры в мире (обычно позиция машинки)
+    zoom: number; // масштаб: сколько пикселей на одну единицу мира
+    canvasSize: Point; // размер канваса в пикселях
+    rotation: number; // угол поворота камеры в радианах
+
+    constructor(center: Point, zoom: number, canvasSize: Point, rotation = 0) {
+        this.center = center;
+        this.zoom = zoom;
+        this.canvasSize = canvasSize;
+        this.rotation = rotation;
+    }
+
+    get worldToScreen(): Matrix3 {
+        const { x: cx, y: cy } = this.center;
+        const { x: w, y: h } = this.canvasSize;
+
+        return Matrix3.translation(w / 2, h / 2) // перенос начала координат в центр экрана
+            .multiply(Matrix3.rotation(-this.rotation)) // инвертируем поворот, потому что мы вращаем мир, а не камеру
+            .multiply(Matrix3.scale(this.zoom, -this.zoom)) // масштаб и инвертирование оси Y (в канвасе Y вниз)
+            .multiply(Matrix3.translation(-cx, -cy)); // сдвигаем так, чтобы камера смотрела в центр
+    }
+
+    get screenToWorld(): Matrix3 {
+        return this.worldToScreen.invert();
+    }
+
+    worldToScreenPoint(p: Point): Point {
+        return this.worldToScreen.transformPoint(p);
+    }
+
+    screenToWorldPoint(p: Point): Point {
+        return this.screenToWorld.transformPoint(p);
+    }
+}
+</file>
+
+<file path="src/engine/World.ts">
+import { Renderable } from "./Renderable";
+import { Viewport } from "./Viewport";
+
+
+export class World {
+    objects: Renderable[] = [];
+
+    add(obj: Renderable) {
+        this.objects.push(obj);
+    }
+
+    addMany(objs: Renderable[]) {
+        this.objects.push(...objs);
+    }
+
+    remove(obj: Renderable) {
+        const index = this.objects.indexOf(obj);
+        if (index >= 0) this.objects.splice(index, 1);
+    }
+
+    render(ctx: CanvasRenderingContext2D, viewport: Viewport) {
+        for (const obj of this.objects) {
+            obj.render(ctx, viewport);
+        }
+    }
+}
+</file>
+
+<file path="src/engine/WorldRenderer.ts">
+import { Point } from "./Point";
+import { Viewport } from "./Viewport";
+import { World } from "./World";
+
+
+export class WorldRenderer {
+    ctx: CanvasRenderingContext2D;
+    viewport: Viewport;
+
+    constructor(ctx: CanvasRenderingContext2D, viewport: Viewport) {
+        this.ctx = ctx;
+        this.viewport = viewport;
+    }
+
+    clear() {
+        const { x, y } = this.viewport.canvasSize;
+        this.ctx.clearRect(0, 0, x, y);
+    }
+
+    applyTransform() {
+        const m = this.viewport.worldToScreen.values;
+        this.ctx.setTransform(m[0], m[3], m[1], m[4], m[2], m[5]);
+    }
+
+    resetTransform() {
+        this.ctx.setTransform(1, 0, 0, 1, 0, 0);
+    }
+
+    drawGrid(spacing = 1, color = '#ddd') {
+        const ctx = this.ctx;
+        const bounds = this.getWorldBounds();
+
+        ctx.save();
+        this.applyTransform();
+
+        ctx.beginPath();
+        for (let x = Math.floor(bounds.minX); x <= bounds.maxX; x += spacing) {
+            ctx.moveTo(x, bounds.minY);
+            ctx.lineTo(x, bounds.maxY);
+        }
+
+        for (let y = Math.floor(bounds.minY); y <= bounds.maxY; y += spacing) {
+            ctx.moveTo(bounds.minX, y);
+            ctx.lineTo(bounds.maxX, y);
+        }
+
+        ctx.strokeStyle = color;
+        ctx.lineWidth = 0.01;
+        ctx.stroke();
+        ctx.restore();
+    }
+
+    getWorldBounds() {
+        const size = this.viewport.canvasSize;
+        const corners = [
+            new Point(0, 0),
+            new Point(size.x, 0),
+            new Point(size.x, size.y),
+            new Point(0, size.y),
+        ].map((p) => this.viewport.screenToWorldPoint(p));
+
+        const xs = corners.map((p) => p.x);
+        const ys = corners.map((p) => p.y);
+
+        return {
+            minX: Math.min(...xs),
+            maxX: Math.max(...xs),
+            minY: Math.min(...ys),
+            maxY: Math.max(...ys),
+        };
+    }
+
+    render(world: World) {
+        this.clear();
+        this.drawGrid();
+        this.applyTransform();
+        world.render(this.ctx, this.viewport);
+        this.resetTransform();
+    }
+}
+</file>
+
+<file path="src/game/Car.ts">
+import { Point } from "../engine/Point";
+import { Renderable } from "../engine/Renderable";
+import { Viewport } from "../engine/Viewport";
+
+
+export class Car implements Renderable {
+    position: Point;
+    angle: number;
+
+    constructor(position: Point, angle = 0) {
+        this.position = position;
+        this.angle = angle;
+    }
+
+    render(ctx: CanvasRenderingContext2D, viewport: Viewport) {
+        ctx.save();
+        ctx.translate(this.position.x, this.position.y);
+        ctx.rotate(this.angle);
+
+        ctx.fillStyle = 'blue';
+        ctx.fillRect(-0.5, -0.25, 1, 0.5); // размер 1×0.5 юнитов
+
+        this.#renderWheel(ctx, new Point(0.35, 0.3));
+        this.#renderWheel(ctx, new Point(-0.35, 0.3));
+        this.#renderWheel(ctx, new Point(0.35, -0.3));
+        this.#renderWheel(ctx, new Point(-0.35, -0.3));
+
+        ctx.restore();
+    }
+
+    #renderWheel(ctx: CanvasRenderingContext2D, center: Point = new Point(0, 0)) {
+        ctx.fillStyle = 'black';
+        const size = new Point(0.2, 0.1);
+        ctx.fillRect(center.x - size.x / 2, center.y - size.y / 2, size.x, size.y);
+    }
+}
+</file>
+
+<file path="src/game/Compass.ts">
+import { Point } from "../engine/Point";
+import { Renderable } from "../engine/Renderable";
+import { Viewport } from "../engine/Viewport";
+
+
+export class Compass implements Renderable {
+    size: number;
+
+    constructor(size = 50) {
+        this.size = size;
+    }
+
+    render(ctx: CanvasRenderingContext2D, viewport: Viewport) {
+        const padding = 10;
+        const center = new Point(
+            viewport.canvasSize.x - this.size / 2 - padding,
+            this.size / 2 + padding
+        );
+
+        ctx.save();
+
+        // Рисуем в экранных координатах, не применяя transform
+        ctx.setTransform(1, 0, 0, 1, 0, 0);
+        ctx.translate(center.x, center.y);
+
+        // Основной круг
+        ctx.beginPath();
+        ctx.arc(0, 0, this.size / 2, 0, Math.PI * 2);
+        ctx.fillStyle = '#222';
+        ctx.fill();
+
+        // Вращаем стрелки в обратную сторону камеры (чтобы север был вверх, юг — вниз)
+        ctx.rotate(-viewport.rotation);
+
+        // Южная стрелка (вниз, 90°)
+        ctx.beginPath();
+        ctx.moveTo(0, 0);
+        ctx.lineTo(0, this.size / 2 - 5);
+        ctx.strokeStyle = 'red';
+        ctx.lineWidth = 4;
+        ctx.stroke();
+
+        // Северная стрелка (вверх, 270°)
+        ctx.beginPath();
+        ctx.moveTo(0, 0);
+        ctx.lineTo(0, -this.size / 2 + 5);
+        ctx.strokeStyle = 'white';
+        ctx.lineWidth = 2;
+        ctx.stroke();
+
+        ctx.restore();
+    }
+}
+</file>
+
+<file path="src/game/RoadBlock.ts">
+import { Point } from '../engine/Point';
+import { Renderable } from '../engine/Renderable';
+import { Viewport } from '../engine/Viewport';
+
+export class RoadBlock implements Renderable {
+    position: Point;
+    angle: number;
+
+    static size: Point = new Point(2, 0.5);
+
+    constructor(position: Point, angle = 0) {
+        this.position = position;
+        this.angle = angle;
+    }
+
+    render(ctx: CanvasRenderingContext2D, viewport: Viewport) {
+        ctx.save();
+        ctx.translate(this.position.x, this.position.y);
+        ctx.rotate(this.angle);
+
+        ctx.fillStyle = 'blue';
+        ctx.fillRect(
+            RoadBlock.size.x * -0.5,
+            RoadBlock.size.y * -0.5,
+            RoadBlock.size.x,
+            RoadBlock.size.y
+        );
+
+        ctx.restore();
+    }
+}
+</file>
+
+<file path="src/game/VehicleController.ts">
+import { RigidBody2D } from '../engine/physics/RigidBody2D';
+
+export class VehicleController {
+    private body: RigidBody2D;
+    private throttle = 0;
+    private steering = 0;
+
+    maxForce = 10;
+    maxSteeringTorque = 5;
+    friction = 2;
+    angularFriction = 3;
+
+    constructor(body: RigidBody2D) {
+        this.body = body;
+    }
+
+    setThrottle(amount: number) {
+        this.throttle = amount; // -1..1
+    }
+
+    setSteering(amount: number) {
+        this.steering = amount; // -1..1
+    }
+
+    update(dt: number) {
+        // Сила вперёд
+        const force = new Point(
+            Math.cos(this.body.angle),
+            Math.sin(this.body.angle)
+        ).scale(this.throttle * this.maxForce);
+        this.body.applyForce(force);
+
+        // Поворот (чем выше скорость — тем круче поворот)
+        const speed = Math.hypot(this.body.velocity.x, this.body.velocity.y);
+        const torque = this.steering * this.maxSteeringTorque * speed;
+        this.body.applyTorque(torque);
+
+        // Простейшее трение
+        this.body.velocity.x *= Math.exp(-this.friction * dt);
+        this.body.velocity.y *= Math.exp(-this.friction * dt);
+        this.body.angularVelocity *= Math.exp(-this.angularFriction * dt);
+    }
+}
+</file>
+
+<file path="src/main.tsx">
+import { Compass } from './game/Compass';
+import { Car } from './game/Car';
+import { WorldRenderer } from './engine/WorldRenderer';
+import { World } from './engine/World';
+import { Viewport } from './engine/Viewport';
+import { Point } from './engine/Point';
+import { fromDeg } from './engine/fromDeg';
+import { FixedTimestepIntegrator } from './engine/FixedTimestampIntegrator';
+import { RigidBody2D } from './engine/physics/RigidBody2D';
+import { RoadBlock } from './game/RoadBlock';
+import { VehicleController } from './game/VehicleController';
+
+function createRoadBlocks() {
+    const roadBlocks: RoadBlock[] = [];
+    for (let i = 0; i < 10; i++) {
+        roadBlocks.push(new RoadBlock(new Point(i, 0)));
+    }
+    return roadBlocks;
+}
+
+function main() {
+    const canvas: HTMLCanvasElement = document.querySelector('canvas#canvas')!;
+    const ctx = canvas.getContext('2d')!;
+    const viewport = new Viewport(
+        new Point(0, 0),
+        100,
+        new Point(canvas.width, canvas.height)
+    );
+    const world = new World();
+    const car = new Car(new Point(0, 0));
+    const compass = new Compass();
+    world.add(compass);
+    world.add(car);
+    world.addMany(createRoadBlocks());
+
+    const carInitialRotation = fromDeg(90);
+    const carInitialPosition = new Point(0, 0);
+    const carBody = new RigidBody2D(carInitialPosition, carInitialRotation, 1);
+    const controller = new VehicleController(carBody);
+
+    const renderer = new WorldRenderer(ctx, viewport);
+    const integrator = new FixedTimestepIntegrator(60);
+
+    function loop() {
+        car.position = carBody.position;
+        car.angle = carBody.angle;
+
+        viewport.rotation = carInitialRotation - car.angle;
+        viewport.center = carBody.position;
+
+        integrator.update((dt) => {
+            carBody.update(dt);
+        });
+        renderer.render(world);
+        requestAnimationFrame(loop);
+    }
+
+    loop();
+
+    document.addEventListener('keydown', (e) => {
+        if (e.code === 'ArrowUp') controller.setThrottle(1);
+        if (e.code === 'ArrowDown') controller.setThrottle(-1);
+        if (e.code === 'ArrowLeft') controller.setSteering(-1);
+        if (e.code === 'ArrowRight') controller.setSteering(1);
+    });
+
+    document.addEventListener('keyup', (e) => {
+        if (e.code === 'ArrowUp' || e.code === 'ArrowDown')
+            controller.setThrottle(0);
+        if (e.code === 'ArrowLeft' || e.code === 'ArrowRight')
+            controller.setSteering(0);
+    });
+}
+
+main();
+</file>
+
+<file path=".gitignore">
+# Created by https://www.toptal.com/developers/gitignore/api/node
+# Edit at https://www.toptal.com/developers/gitignore?templates=node
+
+### Node ###
+# Logs
+logs
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+lerna-debug.log*
+.pnpm-debug.log*
+
+# Diagnostic reports (https://nodejs.org/api/report.html)
+report.[0-9]*.[0-9]*.[0-9]*.[0-9]*.json
+
+# Runtime data
+pids
+*.pid
+*.seed
+*.pid.lock
+
+# Directory for instrumented libs generated by jscoverage/JSCover
+lib-cov
+
+# Coverage directory used by tools like istanbul
+coverage
+*.lcov
+
+# nyc test coverage
+.nyc_output
+
+# Grunt intermediate storage (https://gruntjs.com/creating-plugins#storing-task-files)
+.grunt
+
+# Bower dependency directory (https://bower.io/)
+bower_components
+
+# node-waf configuration
+.lock-wscript
+
+# Compiled binary addons (https://nodejs.org/api/addons.html)
+build/Release
+
+# Dependency directories
+node_modules/
+jspm_packages/
+
+# Snowpack dependency directory (https://snowpack.dev/)
+web_modules/
+
+# TypeScript cache
+*.tsbuildinfo
+
+# Optional npm cache directory
+.npm
+
+# Optional eslint cache
+.eslintcache
+
+# Optional stylelint cache
+.stylelintcache
+
+# Microbundle cache
+.rpt2_cache/
+.rts2_cache_cjs/
+.rts2_cache_es/
+.rts2_cache_umd/
+
+# Optional REPL history
+.node_repl_history
+
+# Output of 'npm pack'
+*.tgz
+
+# Yarn Integrity file
+.yarn-integrity
+
+# dotenv environment variable files
+.env
+.env.development.local
+.env.test.local
+.env.production.local
+.env.local
+
+# parcel-bundler cache (https://parceljs.org/)
+.cache
+.parcel-cache
+
+# Next.js build output
+.next
+out
+
+# Nuxt.js build / generate output
+.nuxt
+dist
+
+# Gatsby files
+.cache/
+# Comment in the public line in if your project uses Gatsby and not Next.js
+# https://nextjs.org/blog/next-9-1#public-directory-support
+# public
+
+# vuepress build output
+.vuepress/dist
+
+# vuepress v2.x temp and cache directory
+.temp
+
+# Docusaurus cache and generated files
+.docusaurus
+
+# Serverless directories
+.serverless/
+
+# FuseBox cache
+.fusebox/
+
+# DynamoDB Local files
+.dynamodb/
+
+# TernJS port file
+.tern-port
+
+# Stores VSCode versions used for testing VSCode extensions
+.vscode-test
+
+# yarn v2
+.yarn/cache
+.yarn/unplugged
+.yarn/build-state.yml
+.yarn/install-state.gz
+.pnp.*
+
+### Node Patch ###
+# Serverless Webpack directories
+.webpack/
+
+# Optional stylelint cache
+
+# SvelteKit build / generate output
+.svelte-kit
+
+# End of https://www.toptal.com/developers/gitignore/api/node
+</file>
+
+<file path="index.html">
+<!DOCTYPE html>
+<html lang="en">
+    <head>
+        <meta charset="UTF-8" />
+        <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+        <title>Preview</title>
+    </head>
+    <body class="bg-gray-950 text-white">
+        <div id="root">
+            <canvas id="canvas" width="800" height="600"></canvas>
+        </div>
+        <script type="module" src="/src/main.tsx"></script>
+    </body>
+</html>
+</file>
+
+<file path="package.json">
+{
+  "name": "vite-react-preview",
+  "version": "0.0.1",
+  "scripts": {
+    "dev": "vite",
+    "build": "vite build",
+    "preview": "vite preview"
+  },
+  "dependencies": {
+    "react": "^18.2.0",
+    "react-dom": "^18.2.0"
+  },
+  "devDependencies": {
+    "@types/react": "^18.2.0",
+    "@types/react-dom": "^18.2.0",
+    "@vitejs/plugin-react": "^4.5.0",
+    "autoprefixer": "^10.4.14",
+    "postcss": "^8.4.21",
+    "tailwindcss": "^3.3.2",
+    "typescript": "^5.0.4",
+    "vite": "^4.3.0"
+  }
+}
+</file>
+
+<file path="postcss.config.js">
+module.exports = {
+  plugins: {
+    tailwindcss: {},
+    autoprefixer: {}
+  }
+}
+</file>
+
+<file path="tailwind.config.js">
+module.exports = {
+  content: ["./index.html", "./src/**/*.{ts,tsx}"],
+  theme: {
+    extend: {}
+  },
+  plugins: []
+}
+</file>
+
+<file path="tsconfig.json">
+{
+  "compilerOptions": {
+    "target": "ESNext",
+    "lib": ["DOM", "DOM.Iterable", "ESNext"],
+    "types": ["vite/client"],
+    "module": "ESNext",
+    "moduleResolution": "Node",
+    "esModuleInterop": true,
+    "jsx": "react-jsx",
+    "strict": true,
+    "forceConsistentCasingInFileNames": true,
+    "skipLibCheck": true
+  }
+}
+</file>
+
+<file path="vite.config.ts">
+import { defineConfig } from 'vite'
+import react from '@vitejs/plugin-react'
+
+export default defineConfig({
+  plugins: [react()]
+})
+</file>
+
+</files>
