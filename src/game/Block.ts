@@ -1,0 +1,29 @@
+import { CollisionBody } from '../engine/physics/CollisionDetector';
+import { Vec2D } from '../engine/Vec2D';
+import { RoadBlockRenderable } from './renderables/RoadBlockRenderable';
+
+export class Block {
+    readonly renderable: RoadBlockRenderable;
+    readonly collider: CollisionBody;
+
+    constructor(
+        public position: Vec2D,
+        public angle: number,
+        public size: Vec2D,
+        public color: string
+    ) {
+        this.renderable = new RoadBlockRenderable({
+            position: this.position,
+            angle: this.angle,
+            size: this.size,
+            color: this.color,
+        });
+
+        this.collider = new CollisionBody(
+            this.position,
+            this.size,
+            this.angle,
+            'static'
+        );
+    }
+}

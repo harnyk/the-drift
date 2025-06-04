@@ -1,8 +1,8 @@
-import { Renderable } from '../engine/Renderable';
-import { Viewport } from '../engine/Viewport';
-import { RigidBody2D } from '../engine/physics/RigidBody2D';
+import { Renderable } from '../../engine/Renderable';
+import { Viewport } from '../../engine/Viewport';
+import { RigidBody2D } from '../../engine/physics/RigidBody2D';
 
-export class Speedometer implements Renderable {
+export class SpeedometerRenderable implements Renderable {
     private body: RigidBody2D;
 
     constructor(body: RigidBody2D) {

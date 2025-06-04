@@ -1,36 +1,39 @@
-import { Vec2D } from "../engine/Vec2D";
-import { Renderable } from "../engine/Renderable";
-import { Viewport } from "../engine/Viewport";
+import { CollisionBody } from '../engine/physics/CollisionDetector';
+import { RigidBody2D } from '../engine/physics/RigidBody2D';
+import { Vec2D } from '../engine/Vec2D';
+import { CarRenderable } from './renderables/CarRenderable';
+import { VehicleController } from './VehicleController';
 
+export class Car {
+    readonly body: RigidBody2D;
+    readonly controller: VehicleController;
+    readonly renderable: CarRenderable;
+    readonly collider: CollisionBody;
 
-export class Car implements Renderable {
-    position: Vec2D;
-    angle: number;
+    constructor(initialPosition: Vec2D, initialRotation = 0) {
+        this.body = new RigidBody2D(initialPosition, initialRotation, 1, 0.1);
 
-    constructor(position: Vec2D, angle = 0) {
-        this.position = position;
-        this.angle = angle;
+        this.renderable = new CarRenderable(this.body.position);
+
+        this.controller = new VehicleController(this.body);
+        this.controller.setFriction(0.3);
+        this.controller.setAngularFriction(1);
+
+        this.collider = new CollisionBody(
+            this.body.position,
+            new Vec2D(1, 0.5),
+            this.body.angle,
+            'dynamic'
+        );
     }
 
-    render(ctx: CanvasRenderingContext2D, viewport: Viewport) {
-        ctx.save();
-        ctx.translate(this.position.x, this.position.y);
-        ctx.rotate(this.angle);
+    update(dt: number) {
+        this.renderable.position = this.body.position;
+        this.renderable.angle = this.body.angle;    
+        this.collider.position = this.body.position;
+        this.collider.angle = this.body.angle;
 
-        ctx.fillStyle = 'blue';
-        ctx.fillRect(-0.5, -0.25, 1, 0.5); // размер 1×0.5 юнитов
-
-        this.#renderWheel(ctx, new Vec2D(0.35, 0.3));
-        this.#renderWheel(ctx, new Vec2D(-0.35, 0.3));
-        this.#renderWheel(ctx, new Vec2D(0.35, -0.3));
-        this.#renderWheel(ctx, new Vec2D(-0.35, -0.3));
-
-        ctx.restore();
-    }
-
-    #renderWheel(ctx: CanvasRenderingContext2D, center: Vec2D = new Vec2D(0, 0)) {
-        ctx.fillStyle = 'black';
-        const size = new Vec2D(0.2, 0.1);
-        ctx.fillRect(center.x - size.x / 2, center.y - size.y / 2, size.x, size.y);
+        this.body.update(dt);
+        this.controller.update(dt);
     }
 }

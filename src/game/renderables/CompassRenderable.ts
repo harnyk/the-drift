@@ -1,9 +1,9 @@
-import { Vec2D } from "../engine/Vec2D";
-import { Renderable } from "../engine/Renderable";
-import { Viewport } from "../engine/Viewport";
+import { Vec2D } from "../../engine/Vec2D";
+import { Renderable } from "../../engine/Renderable";
+import { Viewport } from "../../engine/Viewport";
 
 
-export class Compass implements Renderable {
+export class CompassRenderable implements Renderable {
     size: number;
 
     constructor(size = 50) {

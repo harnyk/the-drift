@@ -1,8 +1,8 @@
-import { Vec2D } from '../engine/Vec2D';
-import { Renderable } from '../engine/Renderable';
-import { Viewport } from '../engine/Viewport';
+import { Vec2D } from '../../engine/Vec2D';
+import { Renderable } from '../../engine/Renderable';
+import { Viewport } from '../../engine/Viewport';
 
-export class RoadBlock implements Renderable {
+export class RoadBlockRenderable implements Renderable {
     position: Vec2D;
     angle: number;
     size: Vec2D;
