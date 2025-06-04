@@ -1,4 +1,5 @@
-import { CollisionBody } from '../engine/physics/CollisionDetector';
+import { BoxCollisionBody } from '../engine/physics/BoxCollisionBody';
+import { CollisionBody } from '../engine/physics/CollisionBody';
 import { RigidBody2D } from '../engine/physics/RigidBody2D';
 import { Vec2D } from '../engine/Vec2D';
 import { CarRenderable } from './renderables/CarRenderable';
@@ -19,7 +20,7 @@ export class Car {
         this.controller.setFriction(0.3);
         this.controller.setAngularFriction(1);
 
-        this.collider = new CollisionBody(
+        this.collider = new BoxCollisionBody(
             this.body.position,
             new Vec2D(1, 0.5),
             this.body.angle,
