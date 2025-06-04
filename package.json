@@ -5,7 +5,8 @@
     "dev": "vite",
     "build": "vite build",
     "preview": "vite preview",
-    "deploy:prod": "vercel --prod"
+    "deploy:prod": "vercel --prod",
+    "test": "npx tsc src/game/controls/KeyboardControl.ts src/game/controls/Events.ts --module commonjs --outDir tests/dist --skipLibCheck && node tests/keyboardControl.test.js"
   },
   "dependencies": {
     "react": "^18.2.0",
