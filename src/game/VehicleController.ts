@@ -73,7 +73,7 @@ export class VehicleController {
         const speed = this.body.velocity.length;
         if (speed <= 0.01) return;
 
-        // Ограничим максимум угла поворота за кадр
+        // Ограничим максимальный угол поворота в зависимости от пройденного расстояния
         const maxTurnPerMeter = 0.5; // радиан на 1 мировую единицу
         const distance = speed * dt;
         const maxRotation = maxTurnPerMeter * distance;
