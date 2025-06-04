@@ -1,4 +1,4 @@
-import { Point } from "../engine/Point";
+import { Vec2D } from "../engine/Vec2D";
 import { Renderable } from "../engine/Renderable";
 import { Viewport } from "../engine/Viewport";
 
@@ -12,7 +12,7 @@ export class Compass implements Renderable {
 
     render(ctx: CanvasRenderingContext2D, viewport: Viewport) {
         const padding = 10;
-        const center = new Point(
+        const center = new Vec2D(
             viewport.canvasSize.x - this.size / 2 - padding,
             this.size / 2 + padding
         );

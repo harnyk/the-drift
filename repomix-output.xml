@@ -58,9 +58,13 @@ src/
     World.ts
     WorldRenderer.ts
   game/
+    controls/
+      Events.ts
+      KeyboardControl.ts
     Car.ts
     Compass.ts
     RoadBlock.ts
+    Speedometer.ts
     VehicleController.ts
   main.tsx
 .gitignore
@@ -75,14 +79,117 @@ vite.config.ts
 <files>
 This section contains the contents of the repository's files.
 
+<file path="src/game/controls/Events.ts">
+export interface ControlEventHorizontal {
+    type: 'horizontal';
+    value: number;
+}
+
+export interface ControlEventVertical {
+    type: 'vertical';
+    value: number;
+}
+
+export type ControlEvent = ControlEventHorizontal | ControlEventVertical;
+</file>
+
+<file path="src/game/controls/KeyboardControl.ts">
+export interface KeyCodes {
+    Up: string;
+    Down: string;
+    Left: string;
+    Right: string;
+}
+
+export const KeyCodeArrows = {
+    Up: 'ArrowUp',
+    Down: 'ArrowDown',
+    Left: 'ArrowLeft',
+    Right: 'ArrowRight',
+} as const;
+
+export const KeyCodeWASD = {
+    Up: 'KeyW',
+    Down: 'KeyS',
+    Left: 'KeyA',
+    Right: 'KeyD',
+} as const;
+
+
+type ControlEvent = {
+    type: 'vertical' | 'horizontal';
+    value: number;
+};
+
+type Listener = (event: ControlEvent) => void;
+
+export class KeyboardControl {
+    private listeners: Listener[] = [];
+
+    constructor(private keycodes: KeyCodes) {}
+
+    subscribe(fn: Listener) {
+        this.listeners.push(fn);
+    }
+
+    unsubscribe(fn: Listener) {
+        this.listeners = this.listeners.filter((l) => l !== fn);
+    }
+
+    private emit(event: ControlEvent) {
+        for (const fn of this.listeners) fn(event);
+    }
+
+    private keyDownListener = (e: KeyboardEvent) => {
+        switch (e.code) {
+            case this.keycodes.Up:
+                this.emit({ type: 'vertical', value: 1 });
+                break;
+            case this.keycodes.Down:
+                this.emit({ type: 'vertical', value: -1 });
+                break;
+            case this.keycodes.Left:
+                this.emit({ type: 'horizontal', value: -1 });
+                break;
+            case this.keycodes.Right:
+                this.emit({ type: 'horizontal', value: 1 });
+                break;
+        }
+    };
+
+    private keyUpListener = (e: KeyboardEvent) => {
+        switch (e.code) {
+            case this.keycodes.Up:
+            case this.keycodes.Down:
+                this.emit({ type: 'vertical', value: 0 });
+                break;
+            case this.keycodes.Left:
+            case this.keycodes.Right:
+                this.emit({ type: 'horizontal', value: 0 });
+                break;
+        }
+    };
+
+    attach() {
+        document.addEventListener('keydown', this.keyDownListener);
+        document.addEventListener('keyup', this.keyUpListener);
+    }
+
+    detach() {
+        document.removeEventListener('keydown', this.keyDownListener);
+        document.removeEventListener('keyup', this.keyUpListener);
+    }
+}
+</file>
+
 <file path="src/engine/physics/RigidBody2D.ts">
-import { Point } from '../Point';
+import { Vec2D } from '../Point';
 
 export class RigidBody2D {
-    position: Point;
-    velocity: Point;
-    acceleration: Point;
-    force: Point;
+    position: Vec2D;
+    velocity: Vec2D;
+    acceleration: Vec2D;
+    force: Vec2D;
     angle: number;
     angularVelocity: number;
     angularForce: number;
@@ -91,15 +198,15 @@ export class RigidBody2D {
     momentOfInertia: number; // для вращения (можно пока = 1)
 
     constructor(
-        position = new Point(0, 0),
+        position = new Vec2D(0, 0),
         angle = 0,
         mass = 1,
         momentOfInertia = 1
     ) {
         this.position = position;
-        this.velocity = new Point(0, 0);
-        this.acceleration = new Point(0, 0);
-        this.force = new Point(0, 0);
+        this.velocity = new Vec2D(0, 0);
+        this.acceleration = new Vec2D(0, 0);
+        this.force = new Vec2D(0, 0);
 
         this.angle = angle;
         this.angularVelocity = 0;
@@ -109,7 +216,7 @@ export class RigidBody2D {
         this.momentOfInertia = momentOfInertia;
     }
 
-    applyForce(force: Point) {
+    applyForce(force: Vec2D) {
         this.force.x += force.x;
         this.force.y += force.y;
     }
@@ -177,7 +284,7 @@ export function fromDeg(degrees: number) {
 </file>
 
 <file path="src/engine/Matrix3.ts">
-import { Point } from "./Point";
+import { Vec2D } from "./Point";
 
 
 export class Matrix3 {
@@ -222,12 +329,12 @@ export class Matrix3 {
         return new Matrix3(r);
     }
 
-    transformPoint(p: Point): Point {
+    transformPoint(p: Vec2D): Vec2D {
         const [a, b, c, d, e, f, g, h, i] = this.values;
         const x = p.x, y = p.y;
         const newX = a * x + b * y + c;
         const newY = d * x + e * y + f;
-        return new Point(newX, newY);
+        return new Vec2D(newX, newY);
     }
 
     invert(): Matrix3 {
@@ -260,18 +367,61 @@ export class Matrix3 {
 </file>
 
 <file path="src/engine/Point.ts">
-export class Point {
+export class Vec2D {
     x: number;
     y: number;
+
     constructor(x: number, y: number) {
         this.x = x;
         this.y = y;
     }
-    scale(s: number) {
-        return new Point(this.x * s, this.y * s);
+
+    static fromPolar(length: number, angleRad: number): Vec2D {
+        return new Vec2D(
+            Math.cos(angleRad) * length,
+            Math.sin(angleRad) * length
+        );
     }
-    add(p: Point) {
-        return new Point(this.x + p.x, this.y + p.y);
+
+    static zero() {
+        return new Vec2D(0, 0);
+    }
+
+    scale(s: number) {
+        return new Vec2D(this.x * s, this.y * s);
+    }
+
+    add(p: Vec2D) {
+        return new Vec2D(this.x + p.x, this.y + p.y);
+    }
+
+    dot(other: Vec2D): number {
+        return this.x * other.x + this.y * other.y;
+    }
+
+    cross(other: Vec2D): number {
+        return this.x * other.y - this.y * other.x;
+    }
+
+    get length(): number {
+        return Math.hypot(this.x, this.y);
+    }
+
+    get angle(): number {
+        return Math.atan2(this.y, this.x);
+    }
+
+    rotate(angleRad: number): Vec2D {
+        const c = Math.cos(angleRad);
+        const s = Math.sin(angleRad);
+        return new Vec2D(this.x * c - this.y * s, this.x * s + this.y * c);
+    }
+
+    normalize(): Vec2D {
+        const len = this.length;
+        return len === 0
+            ? new Vec2D(0, 0)
+            : new Vec2D(this.x / len, this.y / len);
     }
 }
 </file>
@@ -287,18 +437,18 @@ export interface Renderable {
 
 <file path="src/engine/Transform.ts">
 import { Matrix3 } from "./Matrix3";
-import { Point } from "./Point";
+import { Vec2D } from "./Point";
 
 
 export class Transform {
-    position: Point;
+    position: Vec2D;
     rotation: number; // в радианах
-    scale: Point;
+    scale: Vec2D;
 
     constructor(
-        position = new Point(0, 0),
+        position = new Vec2D(0, 0),
         rotation = 0,
-        scale = new Point(1, 1)
+        scale = new Vec2D(1, 1)
     ) {
         this.position = position;
         this.rotation = rotation;
@@ -311,7 +461,7 @@ export class Transform {
             .multiply(Matrix3.scale(this.scale.x, this.scale.y));
     }
 
-    applyToPoint(p: Point): Point {
+    applyToPoint(p: Vec2D): Vec2D {
         return this.matrix.transformPoint(p);
     }
 }
@@ -319,16 +469,16 @@ export class Transform {
 
 <file path="src/engine/Viewport.ts">
 import { Matrix3 } from "./Matrix3";
-import { Point } from "./Point";
+import { Vec2D } from "./Point";
 
 
 export class Viewport {
-    center: Point; // координаты центра камеры в мире (обычно позиция машинки)
+    center: Vec2D; // координаты центра камеры в мире (обычно позиция машинки)
     zoom: number; // масштаб: сколько пикселей на одну единицу мира
-    canvasSize: Point; // размер канваса в пикселях
+    canvasSize: Vec2D; // размер канваса в пикселях
     rotation: number; // угол поворота камеры в радианах
 
-    constructor(center: Point, zoom: number, canvasSize: Point, rotation = 0) {
+    constructor(center: Vec2D, zoom: number, canvasSize: Vec2D, rotation = 0) {
         this.center = center;
         this.zoom = zoom;
         this.canvasSize = canvasSize;
@@ -349,11 +499,11 @@ export class Viewport {
         return this.worldToScreen.invert();
     }
 
-    worldToScreenPoint(p: Point): Point {
+    worldToScreenPoint(p: Vec2D): Vec2D {
         return this.worldToScreen.transformPoint(p);
     }
 
-    screenToWorldPoint(p: Point): Point {
+    screenToWorldPoint(p: Vec2D): Vec2D {
         return this.screenToWorld.transformPoint(p);
     }
 }
@@ -389,7 +539,7 @@ export class World {
 </file>
 
 <file path="src/engine/WorldRenderer.ts">
-import { Point } from "./Point";
+import { Vec2D } from "./Point";
 import { Viewport } from "./Viewport";
 import { World } from "./World";
 
@@ -444,10 +594,10 @@ export class WorldRenderer {
     getWorldBounds() {
         const size = this.viewport.canvasSize;
         const corners = [
-            new Point(0, 0),
-            new Point(size.x, 0),
-            new Point(size.x, size.y),
-            new Point(0, size.y),
+            new Vec2D(0, 0),
+            new Vec2D(size.x, 0),
+            new Vec2D(size.x, size.y),
+            new Vec2D(0, size.y),
         ].map((p) => this.viewport.screenToWorldPoint(p));
 
         const xs = corners.map((p) => p.x);
@@ -472,16 +622,16 @@ export class WorldRenderer {
 </file>
 
 <file path="src/game/Car.ts">
-import { Point } from "../engine/Point";
+import { Vec2D } from "../engine/Point";
 import { Renderable } from "../engine/Renderable";
 import { Viewport } from "../engine/Viewport";
 
 
 export class Car implements Renderable {
-    position: Point;
+    position: Vec2D;
     angle: number;
 
-    constructor(position: Point, angle = 0) {
+    constructor(position: Vec2D, angle = 0) {
         this.position = position;
         this.angle = angle;
     }
@@ -494,24 +644,24 @@ export class Car implements Renderable {
         ctx.fillStyle = 'blue';
         ctx.fillRect(-0.5, -0.25, 1, 0.5); // размер 1×0.5 юнитов
 
-        this.#renderWheel(ctx, new Point(0.35, 0.3));
-        this.#renderWheel(ctx, new Point(-0.35, 0.3));
-        this.#renderWheel(ctx, new Point(0.35, -0.3));
-        this.#renderWheel(ctx, new Point(-0.35, -0.3));
+        this.#renderWheel(ctx, new Vec2D(0.35, 0.3));
+        this.#renderWheel(ctx, new Vec2D(-0.35, 0.3));
+        this.#renderWheel(ctx, new Vec2D(0.35, -0.3));
+        this.#renderWheel(ctx, new Vec2D(-0.35, -0.3));
 
         ctx.restore();
     }
 
-    #renderWheel(ctx: CanvasRenderingContext2D, center: Point = new Point(0, 0)) {
+    #renderWheel(ctx: CanvasRenderingContext2D, center: Vec2D = new Vec2D(0, 0)) {
         ctx.fillStyle = 'black';
-        const size = new Point(0.2, 0.1);
+        const size = new Vec2D(0.2, 0.1);
         ctx.fillRect(center.x - size.x / 2, center.y - size.y / 2, size.x, size.y);
     }
 }
 </file>
 
 <file path="src/game/Compass.ts">
-import { Point } from "../engine/Point";
+import { Vec2D } from "../engine/Point";
 import { Renderable } from "../engine/Renderable";
 import { Viewport } from "../engine/Viewport";
 
@@ -525,7 +675,7 @@ export class Compass implements Renderable {
 
     render(ctx: CanvasRenderingContext2D, viewport: Viewport) {
         const padding = 10;
-        const center = new Point(
+        const center = new Vec2D(
             viewport.canvasSize.x - this.size / 2 - padding,
             this.size / 2 + padding
         );
@@ -567,17 +717,17 @@ export class Compass implements Renderable {
 </file>
 
 <file path="src/game/RoadBlock.ts">
-import { Point } from '../engine/Point';
+import { Vec2D } from '../engine/Point';
 import { Renderable } from '../engine/Renderable';
 import { Viewport } from '../engine/Viewport';
 
 export class RoadBlock implements Renderable {
-    position: Point;
+    position: Vec2D;
     angle: number;
 
-    static size: Point = new Point(2, 0.5);
+    static size: Vec2D = new Vec2D(2, 0.5);
 
-    constructor(position: Point, angle = 0) {
+    constructor(position: Vec2D, angle = 0) {
         this.position = position;
         this.angle = angle;
     }
@@ -600,8 +750,38 @@ export class RoadBlock implements Renderable {
 }
 </file>
 
+<file path="src/game/Speedometer.ts">
+import { Renderable } from '../engine/Renderable';
+import { Viewport } from '../engine/Viewport';
+import { RigidBody2D } from '../engine/physics/RigidBody2D';
+
+export class Speedometer implements Renderable {
+    private body: RigidBody2D;
+
+    constructor(body: RigidBody2D) {
+        this.body = body;
+    }
+
+    render(ctx: CanvasRenderingContext2D, viewport: Viewport): void {
+        const speed = this.body.velocity.length;
+
+        ctx.save();
+        ctx.setTransform(1, 0, 0, 1, 0, 0); // экранные координаты
+        ctx.font = '20px monospace';
+        ctx.fillStyle = '#0f0';
+        ctx.textAlign = 'left';
+        ctx.textBaseline = 'bottom';
+
+        const text = `Speed: ${speed.toFixed(1)} u/s`;
+        ctx.fillText(text, 10, viewport.canvasSize.y - 10);
+        ctx.restore();
+    }
+}
+</file>
+
 <file path="src/game/VehicleController.ts">
 import { RigidBody2D } from '../engine/physics/RigidBody2D';
+import { Vec2D } from '../engine/Point';
 
 export class VehicleController {
     private body: RigidBody2D;
@@ -609,9 +789,11 @@ export class VehicleController {
     private steering = 0;
 
     maxForce = 10;
-    maxSteeringTorque = 5;
-    friction = 2;
+    maxSteeringRate = Math.PI; // рад/сек, ограничение на поворот
+    friction = 5;
     angularFriction = 3;
+    maxSpeed = 10;
+    velocityEpsilon = 0.5;
 
     constructor(body: RigidBody2D) {
         this.body = body;
@@ -625,23 +807,85 @@ export class VehicleController {
         this.steering = amount; // -1..1
     }
 
+    setFriction(amount: number) {
+        this.friction = amount;
+    }
+
+    setAngularFriction(amount: number) {
+        this.angularFriction = amount;
+    }
+
     update(dt: number) {
-        // Сила вперёд
-        const force = new Point(
-            Math.cos(this.body.angle),
-            Math.sin(this.body.angle)
-        ).scale(this.throttle * this.maxForce);
+        this.#applyThrottleForce();
+        this.#alignVelocityWithHeading(dt);
+        this.#rotateBodyIfMoving(dt);
+        this.#applyFriction(dt);
+    }
+
+    #applyThrottleForce() {
+        const forward = Vec2D.fromPolar(1, this.body.angle);
+        const force = forward.scale(this.throttle * this.maxForce);
         this.body.applyForce(force);
+    }
 
-        // Поворот (чем выше скорость — тем круче поворот)
-        const speed = Math.hypot(this.body.velocity.x, this.body.velocity.y);
-        const torque = this.steering * this.maxSteeringTorque * speed;
-        this.body.applyTorque(torque);
+    #alignVelocityWithHeading(dt: number) {
+        const velocity = this.body.velocity;
+        const speed = velocity.length;
+        if (speed <= 0.01 || Math.abs(this.steering) <= 0.01) return;
 
-        // Простейшее трение
-        this.body.velocity.x *= Math.exp(-this.friction * dt);
-        this.body.velocity.y *= Math.exp(-this.friction * dt);
+        const forward = Vec2D.fromPolar(1, this.body.angle);
+        const alignment = forward.dot(velocity.normalize());
+
+        const currentDir = velocity.angle;
+        const desiredDir =
+            alignment >= 0 ? this.body.angle : this.body.angle + Math.PI;
+
+        let delta = desiredDir - currentDir;
+        while (delta > Math.PI) delta -= 2 * Math.PI;
+        while (delta < -Math.PI) delta += 2 * Math.PI;
+
+        const maxTurn = this.maxSteeringRate * dt;
+        const turn = Math.sign(delta) * Math.min(Math.abs(delta), maxTurn);
+        const newAngle = currentDir + turn;
+
+        this.body.velocity = Vec2D.fromPolar(speed, newAngle);
+    }
+
+    #rotateBodyIfMoving(dt: number) {
+        const speed = this.body.velocity.length;
+        if (speed <= 0.01) return;
+
+        // Ограничим максимум угла поворота за кадр
+        const maxTurnPerMeter = 0.5; // радиан на 1 мировую единицу
+        const distance = speed * dt;
+        const maxRotation = maxTurnPerMeter * distance;
+
+        const desiredRotation = this.steering * this.maxSteeringRate * dt;
+        const clampedRotation =
+            Math.sign(desiredRotation) *
+            Math.min(Math.abs(desiredRotation), maxRotation);
+
+        this.body.angle += clampedRotation;
+    }
+
+    #applyFriction(dt: number) {
+        const decay = Math.exp(-this.friction * dt);
+        this.body.velocity = this.body.velocity.scale(decay);
         this.body.angularVelocity *= Math.exp(-this.angularFriction * dt);
+
+        // Ограничитель скорости
+        const speed = this.body.velocity.length;
+        if (speed > this.maxSpeed) {
+            this.body.velocity = this.body.velocity
+                .normalize()
+                .scale(this.maxSpeed);
+        }
+
+        // Обнуление малой скорости
+        if (speed < this.velocityEpsilon && this.throttle === 0) {
+            this.body.velocity = Vec2D.zero();
+            this.body.angularVelocity = 0;
+        }
     }
 }
 </file>
@@ -652,40 +896,58 @@ import { Car } from './game/Car';
 import { WorldRenderer } from './engine/WorldRenderer';
 import { World } from './engine/World';
 import { Viewport } from './engine/Viewport';
-import { Point } from './engine/Point';
+import { Vec2D } from './engine/Point';
 import { fromDeg } from './engine/fromDeg';
 import { FixedTimestepIntegrator } from './engine/FixedTimestampIntegrator';
 import { RigidBody2D } from './engine/physics/RigidBody2D';
 import { RoadBlock } from './game/RoadBlock';
 import { VehicleController } from './game/VehicleController';
+import { Speedometer } from './game/Speedometer';
+import {
+    KeyboardControl,
+    KeyCodeArrows,
+    KeyCodeWASD,
+} from './game/controls/KeyboardControl';
 
 function createRoadBlocks() {
     const roadBlocks: RoadBlock[] = [];
     for (let i = 0; i < 10; i++) {
-        roadBlocks.push(new RoadBlock(new Point(i, 0)));
+        roadBlocks.push(new RoadBlock(new Vec2D(i, 0)));
     }
     return roadBlocks;
 }
 
 function main() {
     const canvas: HTMLCanvasElement = document.querySelector('canvas#canvas')!;
+    canvas.width = document.body.clientWidth;
+    canvas.height = document.body.clientHeight;
     const ctx = canvas.getContext('2d')!;
     const viewport = new Viewport(
-        new Point(0, 0),
-        100,
-        new Point(canvas.width, canvas.height)
+        new Vec2D(0, 0),
+        50,
+        new Vec2D(canvas.width, canvas.height)
     );
+
+    const gameController = new KeyboardControl(KeyCodeWASD);
+    gameController.attach();
+
     const world = new World();
-    const car = new Car(new Point(0, 0));
+    const car = new Car(new Vec2D(0, 0));
     const compass = new Compass();
     world.add(compass);
     world.add(car);
     world.addMany(createRoadBlocks());
 
     const carInitialRotation = fromDeg(90);
-    const carInitialPosition = new Point(0, 0);
+    const carInitialPosition = new Vec2D(0, 0);
     const carBody = new RigidBody2D(carInitialPosition, carInitialRotation, 1);
-    const controller = new VehicleController(carBody);
+    carBody.momentOfInertia = 0.1;
+    const vehicleController = new VehicleController(carBody);
+    vehicleController.setFriction(0.3);
+    vehicleController.setAngularFriction(1);
+
+    const speedometer = new Speedometer(carBody);
+    world.add(speedometer);
 
     const renderer = new WorldRenderer(ctx, viewport);
     const integrator = new FixedTimestepIntegrator(60);
@@ -698,27 +960,34 @@ function main() {
         viewport.center = carBody.position;
 
         integrator.update((dt) => {
+            vehicleController.update(dt);
             carBody.update(dt);
         });
         renderer.render(world);
         requestAnimationFrame(loop);
     }
 
+    setupKeyboardControl(vehicleController, gameController);
     loop();
 
-    document.addEventListener('keydown', (e) => {
-        if (e.code === 'ArrowUp') controller.setThrottle(1);
-        if (e.code === 'ArrowDown') controller.setThrottle(-1);
-        if (e.code === 'ArrowLeft') controller.setSteering(-1);
-        if (e.code === 'ArrowRight') controller.setSteering(1);
-    });
+    function setupKeyboardControl(
+        controller: VehicleController,
+        control: KeyboardControl
+    ) {
+        const throttleDelta = 0.5;
+        const steeringDelta = 0.5;
 
-    document.addEventListener('keyup', (e) => {
-        if (e.code === 'ArrowUp' || e.code === 'ArrowDown')
-            controller.setThrottle(0);
-        if (e.code === 'ArrowLeft' || e.code === 'ArrowRight')
-            controller.setSteering(0);
-    });
+        control.subscribe(({ type, value }) => {
+            switch (type) {
+                case 'vertical':
+                    controller.setThrottle(value * throttleDelta);
+                    break;
+                case 'horizontal':
+                    controller.setSteering(-value * steeringDelta);
+                    break;
+            }
+        });
+    }
 }
 
 main();
@@ -869,6 +1138,8 @@ dist
 .svelte-kit
 
 # End of https://www.toptal.com/developers/gitignore/api/node
+.vercel
+repomix-output.xml
 </file>
 
 <file path="index.html">
@@ -895,11 +1166,13 @@ dist
   "scripts": {
     "dev": "vite",
     "build": "vite build",
-    "preview": "vite preview"
+    "preview": "vite preview",
+    "deploy:prod": "vercel --prod"
   },
   "dependencies": {
     "react": "^18.2.0",
-    "react-dom": "^18.2.0"
+    "react-dom": "^18.2.0",
+    "vercel": "^42.3.0"
   },
   "devDependencies": {
     "@types/react": "^18.2.0",

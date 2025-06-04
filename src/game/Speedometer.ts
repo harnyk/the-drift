@@ -15,7 +15,7 @@ export class Speedometer implements Renderable {
         ctx.save();
         ctx.setTransform(1, 0, 0, 1, 0, 0); // экранные координаты
         ctx.font = '20px monospace';
-        ctx.fillStyle = '#0f0';
+        ctx.fillStyle = '#8b008b';
         ctx.textAlign = 'left';
         ctx.textBaseline = 'bottom';
 

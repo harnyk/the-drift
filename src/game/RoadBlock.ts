@@ -1,16 +1,27 @@
-import { Point } from '../engine/Point';
+import { Vec2D } from '../engine/Vec2D';
 import { Renderable } from '../engine/Renderable';
 import { Viewport } from '../engine/Viewport';
 
 export class RoadBlock implements Renderable {
-    position: Point;
+    position: Vec2D;
     angle: number;
-
-    static size: Point = new Point(2, 0.5);
-
-    constructor(position: Point, angle = 0) {
+    size: Vec2D;
+    color: string;
+    constructor({
+        position = new Vec2D(0, 0),
+        angle = 0,
+        size = new Vec2D(0.5, 0.5),
+        color = 'blue',
+    }: {
+        position?: Vec2D;
+        angle?: number;
+        size?: Vec2D;
+        color?: string;
+    } = {}) {
         this.position = position;
         this.angle = angle;
+        this.size = size;
+        this.color = color;
     }
 
     render(ctx: CanvasRenderingContext2D, viewport: Viewport) {
@@ -18,12 +29,12 @@ export class RoadBlock implements Renderable {
         ctx.translate(this.position.x, this.position.y);
         ctx.rotate(this.angle);
 
-        ctx.fillStyle = 'blue';
+        ctx.fillStyle = this.color;
         ctx.fillRect(
-            RoadBlock.size.x * -0.5,
-            RoadBlock.size.y * -0.5,
-            RoadBlock.size.x,
-            RoadBlock.size.y
+            this.size.x * -0.5,
+            this.size.y * -0.5,
+            this.size.x,
+            this.size.y
         );
 
         ctx.restore();

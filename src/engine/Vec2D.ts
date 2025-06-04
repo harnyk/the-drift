@@ -1,4 +1,4 @@
-export class Point {
+export class Vec2D {
     x: number;
     y: number;
 
@@ -7,26 +7,34 @@ export class Point {
         this.y = y;
     }
 
-    static fromPolar(length: number, angleRad: number): Point {
-        return new Point(
+    static fromPolar(length: number, angleRad: number): Vec2D {
+        return new Vec2D(
             Math.cos(angleRad) * length,
             Math.sin(angleRad) * length
         );
     }
 
+    static zero() {
+        return new Vec2D(0, 0);
+    }
+
     scale(s: number) {
-        return new Point(this.x * s, this.y * s);
+        return new Vec2D(this.x * s, this.y * s);
     }
 
-    add(p: Point) {
-        return new Point(this.x + p.x, this.y + p.y);
+    add(p: Vec2D) {
+        return new Vec2D(this.x + p.x, this.y + p.y);
     }
 
-    dot(other: Point): number {
+    sub(p: Vec2D) {
+        return new Vec2D(this.x - p.x, this.y - p.y);
+    }
+
+    dot(other: Vec2D): number {
         return this.x * other.x + this.y * other.y;
     }
 
-    cross(other: Point): number {
+    cross(other: Vec2D): number {
         return this.x * other.y - this.y * other.x;
     }
 
@@ -38,16 +46,16 @@ export class Point {
         return Math.atan2(this.y, this.x);
     }
 
-    rotate(angleRad: number): Point {
+    rotate(angleRad: number): Vec2D {
         const c = Math.cos(angleRad);
         const s = Math.sin(angleRad);
-        return new Point(this.x * c - this.y * s, this.x * s + this.y * c);
+        return new Vec2D(this.x * c - this.y * s, this.x * s + this.y * c);
     }
 
-    normalize(): Point {
+    normalize(): Vec2D {
         const len = this.length;
         return len === 0
-            ? new Point(0, 0)
-            : new Point(this.x / len, this.y / len);
+            ? new Vec2D(0, 0)
+            : new Vec2D(this.x / len, this.y / len);
     }
 }

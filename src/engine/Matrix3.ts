@@ -1,4 +1,4 @@
-import { Point } from "./Point";
+import { Vec2D } from "./Vec2D";
 
 
 export class Matrix3 {
@@ -43,12 +43,12 @@ export class Matrix3 {
         return new Matrix3(r);
     }
 
-    transformPoint(p: Point): Point {
+    transformPoint(p: Vec2D): Vec2D {
         const [a, b, c, d, e, f, g, h, i] = this.values;
         const x = p.x, y = p.y;
         const newX = a * x + b * y + c;
         const newY = d * x + e * y + f;
-        return new Point(newX, newY);
+        return new Vec2D(newX, newY);
     }
 
     invert(): Matrix3 {

@@ -1,7 +1,6 @@
-import { Point } from "./Point";
-import { Viewport } from "./Viewport";
-import { World } from "./World";
-
+import { Vec2D } from './Vec2D';
+import { Viewport } from './Viewport';
+import { World } from './World';
 
 export class WorldRenderer {
     ctx: CanvasRenderingContext2D;
@@ -26,37 +25,13 @@ export class WorldRenderer {
         this.ctx.setTransform(1, 0, 0, 1, 0, 0);
     }
 
-    drawGrid(spacing = 1, color = '#ddd') {
-        const ctx = this.ctx;
-        const bounds = this.getWorldBounds();
-
-        ctx.save();
-        this.applyTransform();
-
-        ctx.beginPath();
-        for (let x = Math.floor(bounds.minX); x <= bounds.maxX; x += spacing) {
-            ctx.moveTo(x, bounds.minY);
-            ctx.lineTo(x, bounds.maxY);
-        }
-
-        for (let y = Math.floor(bounds.minY); y <= bounds.maxY; y += spacing) {
-            ctx.moveTo(bounds.minX, y);
-            ctx.lineTo(bounds.maxX, y);
-        }
-
-        ctx.strokeStyle = color;
-        ctx.lineWidth = 0.01;
-        ctx.stroke();
-        ctx.restore();
-    }
-
     getWorldBounds() {
         const size = this.viewport.canvasSize;
         const corners = [
-            new Point(0, 0),
-            new Point(size.x, 0),
-            new Point(size.x, size.y),
-            new Point(0, size.y),
+            new Vec2D(0, 0),
+            new Vec2D(size.x, 0),
+            new Vec2D(size.x, size.y),
+            new Vec2D(0, size.y),
         ].map((p) => this.viewport.screenToWorldPoint(p));
 
         const xs = corners.map((p) => p.x);
@@ -72,7 +47,6 @@ export class WorldRenderer {
 
     render(world: World) {
         this.clear();
-        this.drawGrid();
         this.applyTransform();
         world.render(this.ctx, this.viewport);
         this.resetTransform();

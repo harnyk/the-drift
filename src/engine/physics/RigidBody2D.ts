@@ -1,10 +1,10 @@
-import { Point } from '../Point';
+import { Vec2D } from '../Vec2D';
 
 export class RigidBody2D {
-    position: Point;
-    velocity: Point;
-    acceleration: Point;
-    force: Point;
+    position: Vec2D;
+    velocity: Vec2D;
+    acceleration: Vec2D;
+    force: Vec2D;
     angle: number;
     angularVelocity: number;
     angularForce: number;
@@ -13,15 +13,15 @@ export class RigidBody2D {
     momentOfInertia: number; // для вращения (можно пока = 1)
 
     constructor(
-        position = new Point(0, 0),
+        position = new Vec2D(0, 0),
         angle = 0,
         mass = 1,
         momentOfInertia = 1
     ) {
         this.position = position;
-        this.velocity = new Point(0, 0);
-        this.acceleration = new Point(0, 0);
-        this.force = new Point(0, 0);
+        this.velocity = new Vec2D(0, 0);
+        this.acceleration = new Vec2D(0, 0);
+        this.force = new Vec2D(0, 0);
 
         this.angle = angle;
         this.angularVelocity = 0;
@@ -31,7 +31,7 @@ export class RigidBody2D {
         this.momentOfInertia = momentOfInertia;
     }
 
-    applyForce(force: Point) {
+    applyForce(force: Vec2D) {
         this.force.x += force.x;
         this.force.y += force.y;
     }

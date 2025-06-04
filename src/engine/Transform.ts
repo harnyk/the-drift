@@ -1,16 +1,16 @@
 import { Matrix3 } from "./Matrix3";
-import { Point } from "./Point";
+import { Vec2D } from "./Vec2D";
 
 
 export class Transform {
-    position: Point;
+    position: Vec2D;
     rotation: number; // в радианах
-    scale: Point;
+    scale: Vec2D;
 
     constructor(
-        position = new Point(0, 0),
+        position = new Vec2D(0, 0),
         rotation = 0,
-        scale = new Point(1, 1)
+        scale = new Vec2D(1, 1)
     ) {
         this.position = position;
         this.rotation = rotation;
@@ -23,7 +23,7 @@ export class Transform {
             .multiply(Matrix3.scale(this.scale.x, this.scale.y));
     }
 
-    applyToPoint(p: Point): Point {
+    applyToPoint(p: Vec2D): Vec2D {
         return this.matrix.transformPoint(p);
     }
 }
