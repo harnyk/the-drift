@@ -5,9 +5,7 @@ import { Viewport } from './engine/Viewport';
 import { World } from './engine/World';
 import { WorldRenderer } from './engine/WorldRenderer';
 import { fromDeg } from './engine/fromDeg';
-import {
-    CollisionDetector,
-} from './engine/physics/CollisionDetector';
+import { CollisionDetector } from './engine/physics/CollisionDetector';
 import { CollisionBody } from './engine/physics/CollisionBody';
 import { Block } from './game/Block';
 import { Car } from './game/Car';
@@ -15,17 +13,19 @@ import { VehicleController } from './game/VehicleController';
 import { KeyboardControl, KeyCodeWASD } from './game/controls/KeyboardControl';
 import { CompassRenderable } from './game/renderables/CompassRenderable';
 import { SpeedometerRenderable } from './game/renderables/SpeedometerRenderable';
+import { Terrorist } from './game/Terrorist';
 
 function createRoadBlocks() {
     const roadBlocks: Block[] = [];
-    for (let x = 0; x < 10; x++) {
-        for (let y = 0; y < 10; y++) {
+    for (let x = 0; x < 4; x++) {
+        for (let y = 0; y < 4; y++) {
+            const color = Math.random() < 0.5 ? '#a00' : '#0a0';
             roadBlocks.push(
                 new Block(
                     new Vec2D(x * 7, y * 7 + 5),
                     0,
                     new Vec2D(0.5, 0.5),
-                    '#a00'
+                    color
                 )
             );
         }
@@ -75,6 +75,7 @@ function main() {
     const colliderToBlock = new Map<CollisionBody, Block>();
     const grid = new Grid(1, '#ddd');
     const car = new Car(new Vec2D(0, 0), fromDeg(90));
+    const terrorist = new Terrorist(new Vec2D(10, 10), fromDeg(90), colliderToBlock);
     const compass = new CompassRenderable();
     const speedometer = new SpeedometerRenderable(car.body);
 
@@ -86,16 +87,19 @@ function main() {
         colliderToBlock.set(block.collider, block);
     }
     world.add(car.renderable);
+    world.add(terrorist.renderable);
     world.add(speedometer);
     world.add(compass);
 
     collisionDetector.addBody(car.collider);
+    collisionDetector.addBody(terrorist.collider);
 
     const integrator = new FixedTimestepIntegrator(60);
 
     function loop() {
         integrator.update((dt) => {
             car.update(dt);
+            terrorist.update(dt);
         });
 
         viewport.rotation = fromDeg(90) - car.body.angle;
