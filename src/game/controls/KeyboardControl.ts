@@ -29,6 +29,15 @@ type Listener = (event: ControlEvent) => void;
 
 export class KeyboardControl {
     private listeners: Listener[] = [];
+    private pressed = {
+        Up: false,
+        Down: false,
+        Left: false,
+        Right: false,
+    };
+
+    private vertical = 0;
+    private horizontal = 0;
 
     constructor(private keycodes: KeyCodes) {}
 
@@ -45,34 +54,63 @@ export class KeyboardControl {
     }
 
     private keyDownListener = (e: KeyboardEvent) => {
+        let changed = false;
         switch (e.code) {
             case this.keycodes.Up:
-                this.emit({ type: 'vertical', value: 1 });
+                changed = !this.pressed.Up;
+                this.pressed.Up = true;
                 break;
             case this.keycodes.Down:
-                this.emit({ type: 'vertical', value: -1 });
+                changed = !this.pressed.Down;
+                this.pressed.Down = true;
                 break;
             case this.keycodes.Left:
-                this.emit({ type: 'horizontal', value: -1 });
+                changed = !this.pressed.Left;
+                this.pressed.Left = true;
                 break;
             case this.keycodes.Right:
-                this.emit({ type: 'horizontal', value: 1 });
+                changed = !this.pressed.Right;
+                this.pressed.Right = true;
                 break;
         }
+        if (changed) this.updateAxes();
     };
 
     private keyUpListener = (e: KeyboardEvent) => {
+        let changed = false;
         switch (e.code) {
             case this.keycodes.Up:
+                changed = this.pressed.Up;
+                this.pressed.Up = false;
+                break;
             case this.keycodes.Down:
-                this.emit({ type: 'vertical', value: 0 });
+                changed = this.pressed.Down;
+                this.pressed.Down = false;
                 break;
             case this.keycodes.Left:
+                changed = this.pressed.Left;
+                this.pressed.Left = false;
+                break;
             case this.keycodes.Right:
-                this.emit({ type: 'horizontal', value: 0 });
+                changed = this.pressed.Right;
+                this.pressed.Right = false;
                 break;
         }
+        if (changed) this.updateAxes();
     };
+
+    private updateAxes() {
+        const newVertical = (this.pressed.Up ? 1 : 0) + (this.pressed.Down ? -1 : 0);
+        const newHorizontal = (this.pressed.Right ? 1 : 0) + (this.pressed.Left ? -1 : 0);
+        if (newVertical !== this.vertical) {
+            this.vertical = newVertical;
+            this.emit({ type: 'vertical', value: this.vertical });
+        }
+        if (newHorizontal !== this.horizontal) {
+            this.horizontal = newHorizontal;
+            this.emit({ type: 'horizontal', value: this.horizontal });
+        }
+    }
 
     attach() {
         document.addEventListener('keydown', this.keyDownListener);
