@@ -1,4 +1,4 @@
-import { CollisionBody } from '../engine/physics/CollisionDetector';
+import { BoxCollisionBody, CollisionBody } from '../engine/physics/CollisionDetector';
 import { Vec2D } from '../engine/Vec2D';
 import { RoadBlockRenderable } from './renderables/RoadBlockRenderable';
 
@@ -19,7 +19,7 @@ export class Block {
             color: this.color,
         });
 
-        this.collider = new CollisionBody(
+        this.collider = new BoxCollisionBody(
             this.position,
             this.size,
             this.angle,

@@ -2,11 +2,34 @@ import { Vec2D } from '../Vec2D';
 
 export type BodyType = 'static' | 'dynamic';
 
-export class CollisionBody {
+export abstract class CollisionBody {
     position: Vec2D;
-    size: Vec2D;
     angle: number;
     type: BodyType;
+
+    constructor(position: Vec2D, angle = 0, type: BodyType = 'dynamic') {
+        this.position = position;
+        this.angle = angle;
+        this.type = type;
+    }
+
+    abstract getVertices(): Vec2D[];
+
+    getAxes(): Vec2D[] {
+        const verts = this.getVertices();
+        const axes: Vec2D[] = [];
+        for (let i = 0; i < verts.length; i++) {
+            const p1 = verts[i];
+            const p2 = verts[(i + 1) % verts.length];
+            const edge = p2.sub(p1);
+            axes.push(new Vec2D(-edge.y, edge.x).normalize());
+        }
+        return axes;
+    }
+}
+
+export class BoxCollisionBody extends CollisionBody {
+    size: Vec2D;
 
     constructor(
         position: Vec2D,
@@ -14,10 +37,45 @@ export class CollisionBody {
         angle = 0,
         type: BodyType = 'dynamic'
     ) {
-        this.position = position;
+        super(position, angle, type);
         this.size = size;
-        this.angle = angle;
-        this.type = type;
+    }
+
+    getVertices(): Vec2D[] {
+        const half = this.size.scale(0.5);
+        const local = [
+            new Vec2D(-half.x, -half.y),
+            new Vec2D(half.x, -half.y),
+            new Vec2D(half.x, half.y),
+            new Vec2D(-half.x, half.y),
+        ];
+        return local.map((p) => p.rotate(this.angle).add(this.position));
+    }
+}
+
+export class RegularPolygonCollisionBody extends CollisionBody {
+    radius: number;
+    sides: number;
+
+    constructor(
+        position: Vec2D,
+        radius: number,
+        sides: number,
+        angle = 0,
+        type: BodyType = 'dynamic'
+    ) {
+        super(position, angle, type);
+        this.radius = radius;
+        this.sides = sides;
+    }
+
+    getVertices(): Vec2D[] {
+        const verts: Vec2D[] = [];
+        for (let i = 0; i < this.sides; i++) {
+            const local = Vec2D.fromPolar(this.radius, (2 * Math.PI * i) / this.sides);
+            verts.push(local.rotate(this.angle).add(this.position));
+        }
+        return verts;
     }
 }
 
@@ -51,15 +109,10 @@ export class CollisionDetector {
     }
 
     #overlap(a: CollisionBody, b: CollisionBody): boolean {
-        const axes = [
-            Vec2D.fromPolar(1, a.angle),
-            Vec2D.fromPolar(1, a.angle + Math.PI / 2),
-            Vec2D.fromPolar(1, b.angle),
-            Vec2D.fromPolar(1, b.angle + Math.PI / 2),
-        ];
+        const axes = [...a.getAxes(), ...b.getAxes()];
 
-        const vertsA = this.#getVertices(a);
-        const vertsB = this.#getVertices(b);
+        const vertsA = a.getVertices();
+        const vertsB = b.getVertices();
 
         for (const axis of axes) {
             const [minA, maxA] = this.#project(vertsA, axis);
@@ -69,16 +122,6 @@ export class CollisionDetector {
         return true;
     }
 
-    #getVertices(b: CollisionBody): Vec2D[] {
-        const half = b.size.scale(0.5);
-        const local = [
-            new Vec2D(-half.x, -half.y),
-            new Vec2D(half.x, -half.y),
-            new Vec2D(half.x, half.y),
-            new Vec2D(-half.x, half.y),
-        ];
-        return local.map((p) => p.rotate(b.angle).add(b.position));
-    }
 
     #project(points: Vec2D[], axis: Vec2D): [number, number] {
         const norm = axis.normalize();
