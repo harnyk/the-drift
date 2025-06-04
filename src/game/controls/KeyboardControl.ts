@@ -47,15 +47,19 @@ export class KeyboardControl {
     private keyDownListener = (e: KeyboardEvent) => {
         switch (e.code) {
             case this.keycodes.Up:
+                e.preventDefault();
                 this.emit({ type: 'vertical', value: 1 });
                 break;
             case this.keycodes.Down:
+                e.preventDefault();
                 this.emit({ type: 'vertical', value: -1 });
                 break;
             case this.keycodes.Left:
+                e.preventDefault();
                 this.emit({ type: 'horizontal', value: -1 });
                 break;
             case this.keycodes.Right:
+                e.preventDefault();
                 this.emit({ type: 'horizontal', value: 1 });
                 break;
         }
@@ -65,10 +69,12 @@ export class KeyboardControl {
         switch (e.code) {
             case this.keycodes.Up:
             case this.keycodes.Down:
+                e.preventDefault();
                 this.emit({ type: 'vertical', value: 0 });
                 break;
             case this.keycodes.Left:
             case this.keycodes.Right:
+                e.preventDefault();
                 this.emit({ type: 'horizontal', value: 0 });
                 break;
         }
