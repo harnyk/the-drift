@@ -5,7 +5,10 @@ import { Viewport } from './engine/Viewport';
 import { World } from './engine/World';
 import { WorldRenderer } from './engine/WorldRenderer';
 import { fromDeg } from './engine/fromDeg';
-import { CollisionDetector } from './engine/physics/CollisionDetector';
+import {
+    CollisionDetector,
+    CollisionBody,
+} from './engine/physics/CollisionDetector';
 import { Block } from './game/Block';
 import { Car } from './game/Car';
 import { VehicleController } from './game/VehicleController';
@@ -69,21 +72,22 @@ function main() {
     const world = new World();
 
     const roadBlocks = createRoadBlocks();
+    const colliderToBlock = new Map<CollisionBody, Block>();
     const grid = new Grid(1, '#ddd');
     const car = new Car(new Vec2D(0, 0), fromDeg(90));
     const compass = new CompassRenderable();
     const speedometer = new SpeedometerRenderable(car.body);
 
     world.add(grid);
-    world.addMany(roadBlocks.map((block) => block.renderable));
+    const collisionDetector = new CollisionDetector();
+    for (const block of roadBlocks) {
+        world.add(block.renderable);
+        collisionDetector.addBody(block.collider);
+        colliderToBlock.set(block.collider, block);
+    }
     world.add(car.renderable);
     world.add(speedometer);
     world.add(compass);
-
-    const collisionDetector = new CollisionDetector();
-    for (const block of roadBlocks) {
-        collisionDetector.addBody(block.collider);
-    }
 
     collisionDetector.addBody(car.collider);
 
@@ -104,8 +108,15 @@ function main() {
         const collisions = collisionDetector
             .detect()
             .filter(({ a, b }) => a === car.collider || b === car.collider);
-        if (collisions.length > 0) {
-            console.log('Collisions:', collisions);
+
+        for (const { a, b } of collisions) {
+            const other = a === car.collider ? b : a;
+            const block = colliderToBlock.get(other);
+            if (block) {
+                world.remove(block.renderable);
+                collisionDetector.removeBody(block.collider);
+                colliderToBlock.delete(other);
+            }
         }
 
         renderer.render(world);

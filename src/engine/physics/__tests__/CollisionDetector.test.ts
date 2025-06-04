@@ -29,4 +29,15 @@ describe('CollisionDetector', () => {
         const collisions = detector.detect();
         expect(collisions).toEqual([{ a: d1, b: d2 }]);
     });
+
+    it('can remove bodies', () => {
+        const detector = new CollisionDetector();
+        const d1 = new CollisionBody(new Vec2D(0, 0), new Vec2D(1, 1));
+        const d2 = new CollisionBody(new Vec2D(0.5, 0), new Vec2D(1, 1));
+        detector.addBody(d1);
+        detector.addBody(d2);
+        detector.removeBody(d1);
+        const collisions = detector.detect();
+        expect(collisions).toEqual([]);
+    });
 });

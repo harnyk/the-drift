@@ -18,6 +18,10 @@ export class World {
         if (index >= 0) this.objects.splice(index, 1);
     }
 
+    removeMany(objs: Renderable[]) {
+        for (const obj of objs) this.remove(obj);
+    }
+
     render(ctx: CanvasRenderingContext2D, viewport: Viewport) {
         for (const obj of this.objects) {
             obj.render(ctx, viewport);
