@@ -1,9 +1,9 @@
 import {
-    CollisionBody,
     CollisionDetector,
-    BoxCollisionBody,
-    RegularPolygonCollisionBody,
 } from '../CollisionDetector';
+import { RegularPolygonCollisionBody } from '../RegularPolygonCollisionBody';
+import { BoxCollisionBody } from '../BoxCollisionBody';
+import { CollisionBody } from '../CollisionBody';
 import { Vec2D } from '../../Vec2D';
 
 describe('CollisionDetector', () => {

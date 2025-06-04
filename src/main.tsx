@@ -7,8 +7,8 @@ import { WorldRenderer } from './engine/WorldRenderer';
 import { fromDeg } from './engine/fromDeg';
 import {
     CollisionDetector,
-    CollisionBody,
 } from './engine/physics/CollisionDetector';
+import { CollisionBody } from './engine/physics/CollisionBody';
 import { Block } from './game/Block';
 import { Car } from './game/Car';
 import { VehicleController } from './game/VehicleController';
