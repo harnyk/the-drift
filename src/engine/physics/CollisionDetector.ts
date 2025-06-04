@@ -30,6 +30,11 @@ export class CollisionDetector {
         this.bodies.push(body);
     }
 
+    removeBody(body: CollisionBody) {
+        const index = this.bodies.indexOf(body);
+        if (index >= 0) this.bodies.splice(index, 1);
+    }
+
     detect(): CollisionPair[] {
         const pairs: CollisionPair[] = [];
         for (let i = 0; i < this.bodies.length; i++) {
