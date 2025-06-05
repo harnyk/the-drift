@@ -1,13 +1,8 @@
 import { IVec2D } from './IVec2D';
 
 export class Vec2D {
-    x: number;
-    y: number;
-
-    constructor(x: number, y: number) {
-        this.x = x;
-        this.y = y;
-    }
+    x: number = 0;
+    y: number = 0;
 
     assign(vec: IVec2D) {
         this.x = vec.x;
@@ -22,7 +17,7 @@ export class Vec2D {
     }
 
     clone() {
-        return new Vec2D(this.x, this.y);
+        return new Vec2D().assign(this);
     }
 
     zero() {
@@ -75,8 +70,12 @@ export class Vec2D {
 
     normalize() {
         const len = this.length;
-        return len === 0
-            ? new Vec2D(0, 0)
-            : new Vec2D(this.x / len, this.y / len);
+        if (len === 0) {
+            this.zero();
+        } else {
+            this.x /= len;
+            this.y /= len;
+        }
+        return this;
     }
 }
