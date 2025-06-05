@@ -1,4 +1,4 @@
-import { Vec2D } from '../../engine/Vec2D';
+import { Vec2D } from '../../engine/vec/Vec2D';
 import { Renderable } from '../../engine/Renderable';
 import { Viewport } from '../../engine/Viewport';
 

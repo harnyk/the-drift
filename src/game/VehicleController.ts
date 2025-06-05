@@ -1,5 +1,5 @@
 import { RigidBody2D } from '../engine/physics/RigidBody2D';
-import { Vec2D } from '../engine/Vec2D';
+import { Vec2D } from '../engine/vec/Vec2D';
 
 export class VehicleController {
     private body: RigidBody2D;

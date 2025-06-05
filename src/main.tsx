@@ -1,6 +1,6 @@
 import { FixedTimestepIntegrator } from './engine/FixedTimestepIntegrator';
 import { Grid } from './engine/Grid';
-import { Vec2D } from './engine/Vec2D';
+import { Vec2D } from './engine/vec/Vec2D';
 import { Viewport } from './engine/Viewport';
 import { World } from './engine/World';
 import { WorldRenderer } from './engine/WorldRenderer';

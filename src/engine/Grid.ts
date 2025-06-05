@@ -1,6 +1,6 @@
 import { Renderable } from '../engine/Renderable';
 import { Viewport } from '../engine/Viewport';
-import { Vec2D } from './Vec2D';
+import { Vec2D } from './vec/Vec2D';
 
 export class Grid implements Renderable {
     spacing: number;

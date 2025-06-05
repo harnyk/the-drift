@@ -1,6 +1,6 @@
 import { BoxCollisionBody } from '../engine/physics/BoxCollisionBody';
 import { CollisionBody } from '../engine/physics/CollisionBody';
-import { Vec2D } from '../engine/Vec2D';
+import { Vec2D } from '../engine/vec/Vec2D';
 import { RoadBlockRenderable } from './renderables/RoadBlockRenderable';
 
 export class Block {

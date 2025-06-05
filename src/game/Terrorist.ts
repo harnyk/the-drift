@@ -1,7 +1,7 @@
 import { CollisionBody } from '../engine/physics/CollisionBody';
 import { RegularPolygonCollisionBody } from '../engine/physics/RegularPolygonCollisionBody';
 import { RigidBody2D } from '../engine/physics/RigidBody2D';
-import { Vec2D } from '../engine/Vec2D';
+import { Vec2D } from '../engine/vec/Vec2D';
 import { Block } from './Block';
 import { RegularPolygonRenderable } from './renderables/RegularPolygonRenderable';
 

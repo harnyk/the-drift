@@ -1,4 +1,4 @@
-import { Vec2D } from './Vec2D';
+import { Vec2D } from './vec/Vec2D';
 import { Viewport } from './Viewport';
 import { World } from './World';
 

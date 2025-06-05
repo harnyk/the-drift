@@ -4,7 +4,7 @@ import {
 import { RegularPolygonCollisionBody } from '../RegularPolygonCollisionBody';
 import { BoxCollisionBody } from '../BoxCollisionBody';
 import { CollisionBody } from '../CollisionBody';
-import { Vec2D } from '../../Vec2D';
+import { Vec2D } from '../../vec/Vec2D';
 
 describe('CollisionDetector', () => {
     it('ignores collisions between static bodies', () => {

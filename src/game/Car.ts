@@ -1,7 +1,7 @@
 import { BoxCollisionBody } from '../engine/physics/BoxCollisionBody';
 import { CollisionBody } from '../engine/physics/CollisionBody';
 import { RigidBody2D } from '../engine/physics/RigidBody2D';
-import { Vec2D } from '../engine/Vec2D';
+import { Vec2D } from '../engine/vec/Vec2D';
 import { CarRenderable } from './renderables/CarRenderable';
 import { VehicleController } from './VehicleController';
 

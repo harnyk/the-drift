@@ -1,4 +1,4 @@
-import { Vec2D } from '../Vec2D';
+import { Vec2D } from '../vec/Vec2D';
 
 describe('Vec2D.fromPolar', () => {
   it('creates vector at given length and angle', () => {
