@@ -1,14 +1,16 @@
 import { Vec2DLegacy } from "../../engine/vec/Vec2DLegacy";
 import { Renderable } from "../../engine/Renderable";
 import { Viewport } from "../../engine/Viewport";
+import { Vec2D } from "../../engine/vec/Vec2D";
+import { IVec2D } from "../../engine/vec/IVec2D";
 
 
 export class CarRenderable implements Renderable {
-    position: Vec2DLegacy;
+    readonly position: Vec2D = new Vec2D();
     angle: number;
 
-    constructor(position: Vec2DLegacy, angle = 0) {
-        this.position = position;
+    constructor(position: IVec2D, angle = 0) {
+        this.position.assign(position);
         this.angle = angle;
     }
 

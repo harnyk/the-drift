@@ -1,13 +1,20 @@
 import { IVec2D } from './IVec2D';
+import { Vec2DLegacy } from './Vec2DLegacy';
 
 export class Vec2D {
     x: number = 0;
     y: number = 0;
 
-    assign(vec: IVec2D) {
-        this.x = vec.x;
-        this.y = vec.y;
+    public readonly isVec2D = true;
+
+    set(x: number, y: number) {
+        this.x = x;
+        this.y = y;
         return this;
+    }
+
+    assign(vec: IVec2D) {
+        return this.set(vec.x, vec.y);
     }
 
     assignPolar(length: number, angleRad: number) {
@@ -18,6 +25,13 @@ export class Vec2D {
 
     clone() {
         return new Vec2D().assign(this);
+    }
+
+    /**
+     * @deprecated do not use Vec2DLegacy
+     */
+    toLegacy() {
+        return new Vec2DLegacy(this.x, this.y);
     }
 
     zero() {

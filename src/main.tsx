@@ -14,6 +14,7 @@ import { KeyboardControl, KeyCodeWASD } from './game/controls/KeyboardControl';
 import { CompassRenderable } from './game/renderables/CompassRenderable';
 import { SpeedometerRenderable } from './game/renderables/SpeedometerRenderable';
 import { Terrorist } from './game/Terrorist';
+import { Vec2D } from './engine/vec/Vec2D';
 
 function createRoadBlocks() {
     const roadBlocks: Block[] = [];
@@ -22,9 +23,9 @@ function createRoadBlocks() {
             const color = Math.random() < 0.5 ? '#a00' : '#0a0';
             roadBlocks.push(
                 new Block(
-                    new Vec2DLegacy(x * 7, y * 7 + 5),
+                    new Vec2D().set(x * 7, y * 7 + 5),
+                    new Vec2D().set(0.5, 0.5),
                     0,
-                    new Vec2DLegacy(0.5, 0.5),
                     color
                 )
             );
@@ -75,7 +76,11 @@ function main() {
     const colliderToBlock = new Map<CollisionBody, Block>();
     const grid = new Grid(1, '#ddd');
     const car = new Car(new Vec2DLegacy(0, 0), fromDeg(90));
-    const terrorist = new Terrorist(new Vec2DLegacy(10, 10), fromDeg(90), colliderToBlock);
+    const terrorist = new Terrorist(
+        new Vec2DLegacy(10, 10),
+        fromDeg(90),
+        colliderToBlock
+    );
     const compass = new CompassRenderable();
     const speedometer = new SpeedometerRenderable(car.body);
 

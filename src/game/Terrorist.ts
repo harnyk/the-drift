@@ -1,6 +1,7 @@
 import { CollisionBody } from '../engine/physics/CollisionBody';
 import { RegularPolygonCollisionBody } from '../engine/physics/RegularPolygonCollisionBody';
 import { RigidBody2D } from '../engine/physics/RigidBody2D';
+import { Vec2D } from '../engine/vec/Vec2D';
 import { Vec2DLegacy } from '../engine/vec/Vec2DLegacy';
 import { Block } from './Block';
 import { RegularPolygonRenderable } from './renderables/RegularPolygonRenderable';
@@ -44,24 +45,28 @@ export class Terrorist {
         if (this.timeAccumulator >= 1) {
             if (this.colliderToBlock.size > 0) {
                 const center = this.#getAveragePositionOfAllBlocks();
-                const v = center.sub(this.body.position).normalize().scale(50);
-                this.body.applyForce(v);
+                center.sub(this.body.position).normalize().scale(50);
+                this.body.applyForce(center.toLegacy());
             }
             this.timeAccumulator = 0;
         }
 
-        this.renderable.position = this.body.position;
+        this.renderable.position.assign(this.body.position);
         this.renderable.angle = this.body.angle;
         this.collider.position = this.body.position;
         this.collider.angle = this.body.angle;
         this.body.update(dt);
     }
 
+    readonly #sum = new Vec2D();
     #getAveragePositionOfAllBlocks() {
-        let sum = new Vec2DLegacy(0, 0);
+        const sum = this.#sum;
+        sum.zero();
+
         for (const block of this.colliderToBlock.values()) {
-            sum = sum.add(block.renderable.position);
+            sum.add(block.renderable.position);
         }
-        return sum.scale(1 / this.colliderToBlock.size);
+        sum.scale(1 / this.colliderToBlock.size);
+        return sum;
     }
 }
