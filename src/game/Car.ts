@@ -21,7 +21,7 @@ export class Car {
         this.controller.setAngularFriction(1);
 
         this.collider = new BoxCollisionBody(
-            this.body.position,
+            this.body.position.toLegacy(),
             new Vec2DLegacy(1, 0.5),
             this.body.angle,
             'dynamic'
@@ -30,8 +30,8 @@ export class Car {
 
     update(dt: number) {
         this.renderable.position.assign(this.body.position);
-        this.renderable.angle = this.body.angle;    
-        this.collider.position = this.body.position;
+        this.renderable.angle = this.body.angle;
+        this.collider.position = this.body.position.toLegacy();
         this.collider.angle = this.body.angle;
 
         this.body.update(dt);

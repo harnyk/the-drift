@@ -2,7 +2,6 @@ import { CollisionBody } from '../engine/physics/CollisionBody';
 import { RegularPolygonCollisionBody } from '../engine/physics/RegularPolygonCollisionBody';
 import { RigidBody2D } from '../engine/physics/RigidBody2D';
 import { Vec2D } from '../engine/vec/Vec2D';
-import { Vec2DLegacy } from '../engine/vec/Vec2DLegacy';
 import { Block } from './Block';
 import { RegularPolygonRenderable } from './renderables/RegularPolygonRenderable';
 
@@ -13,7 +12,7 @@ export class Terrorist {
     private timeAccumulator: number = 0;
 
     constructor(
-        position: Vec2DLegacy,
+        position: Vec2D,
         angle = 0,
         public readonly colliderToBlock: Map<CollisionBody, Block>
     ) {
@@ -29,7 +28,7 @@ export class Terrorist {
         });
 
         this.collider = new RegularPolygonCollisionBody(
-            position,
+            position.toLegacy(),
             radius,
             sides,
             angle,
@@ -53,7 +52,7 @@ export class Terrorist {
 
         this.renderable.position.assign(this.body.position);
         this.renderable.angle = this.body.angle;
-        this.collider.position = this.body.position;
+        this.collider.position = this.body.position.toLegacy();
         this.collider.angle = this.body.angle;
         this.body.update(dt);
     }

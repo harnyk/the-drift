@@ -1,11 +1,24 @@
 import { IVec2D } from './IVec2D';
 import { Vec2DLegacy } from './Vec2DLegacy';
 
+export interface ImmutableVec2D {
+    readonly x: number;
+    readonly y: number;
+    readonly isVec2D: true;
+    toLegacy(): Vec2DLegacy;
+    length: number;
+    angle: number;
+}
+
 export class Vec2D {
     x: number = 0;
     y: number = 0;
 
     public readonly isVec2D = true;
+
+    toImmutable(): ImmutableVec2D {
+        return this;
+    }
 
     set(x: number, y: number) {
         this.x = x;
@@ -23,6 +36,9 @@ export class Vec2D {
         return this;
     }
 
+    /**
+     * @deprecated do not clone
+     */
     clone() {
         return new Vec2D().assign(this);
     }

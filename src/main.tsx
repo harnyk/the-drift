@@ -77,7 +77,7 @@ function main() {
     const grid = new Grid(1, '#ddd');
     const car = new Car(new Vec2DLegacy(0, 0), fromDeg(90));
     const terrorist = new Terrorist(
-        new Vec2DLegacy(10, 10),
+        new Vec2D().set(10, 10),
         fromDeg(90),
         colliderToBlock
     );
@@ -110,7 +110,7 @@ function main() {
         viewport.rotation = fromDeg(90) - car.body.angle;
         viewport.center = viewport.screenToWorldPoint(
             viewport
-                .worldToScreenPoint(car.body.position)
+                .worldToScreenPoint(car.body.position.toLegacy())
                 .sub(new Vec2DLegacy(0, canvas.height * 0.25))
         );
 
