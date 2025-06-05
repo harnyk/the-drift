@@ -1,21 +1,21 @@
-import { Vec2D } from '../../engine/vec/Vec2D';
+import { Vec2DLegacy } from '../../engine/vec/Vec2DLegacy';
 import { Renderable } from '../../engine/Renderable';
 import { Viewport } from '../../engine/Viewport';
 
 export class RoadBlockRenderable implements Renderable {
-    position: Vec2D;
+    position: Vec2DLegacy;
     angle: number;
-    size: Vec2D;
+    size: Vec2DLegacy;
     color: string;
     constructor({
-        position = new Vec2D(0, 0),
+        position = new Vec2DLegacy(0, 0),
         angle = 0,
-        size = new Vec2D(0.5, 0.5),
+        size = new Vec2DLegacy(0.5, 0.5),
         color = 'blue',
     }: {
-        position?: Vec2D;
+        position?: Vec2DLegacy;
         angle?: number;
-        size?: Vec2D;
+        size?: Vec2DLegacy;
         color?: string;
     } = {}) {
         this.position = position;

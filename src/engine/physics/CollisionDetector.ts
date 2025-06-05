@@ -1,4 +1,4 @@
-import { Vec2D } from '../vec/Vec2D';
+import { Vec2DLegacy } from '../vec/Vec2DLegacy';
 import { CollisionBody } from './CollisionBody';
 
 export type BodyType = 'static' | 'dynamic';
@@ -46,7 +46,7 @@ export class CollisionDetector {
         return true;
     }
 
-    #project(points: Vec2D[], axis: Vec2D): [number, number] {
+    #project(points: Vec2DLegacy[], axis: Vec2DLegacy): [number, number] {
         const norm = axis.normalize();
         const values = points.map((p) => p.dot(norm));
         return [Math.min(...values), Math.max(...values)];

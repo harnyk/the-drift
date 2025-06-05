@@ -1,6 +1,6 @@
 import { Renderable } from '../engine/Renderable';
 import { Viewport } from '../engine/Viewport';
-import { Vec2D } from './vec/Vec2D';
+import { Vec2DLegacy } from './vec/Vec2DLegacy';
 
 export class Grid implements Renderable {
     spacing: number;
@@ -46,10 +46,10 @@ export class Grid implements Renderable {
     #getWorldBounds(viewport: Viewport) {
         const size = viewport.canvasSize;
         const corners = [
-            new Vec2D(0, 0),
-            new Vec2D(size.x, 0),
-            new Vec2D(size.x, size.y),
-            new Vec2D(0, size.y),
+            new Vec2DLegacy(0, 0),
+            new Vec2DLegacy(size.x, 0),
+            new Vec2DLegacy(size.x, size.y),
+            new Vec2DLegacy(0, size.y),
         ].map((p) => viewport.screenToWorldPoint(p));
 
         const xs = corners.map((p) => p.x);

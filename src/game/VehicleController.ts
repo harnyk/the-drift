@@ -1,5 +1,5 @@
 import { RigidBody2D } from '../engine/physics/RigidBody2D';
-import { Vec2D } from '../engine/vec/Vec2D';
+import { Vec2DLegacy } from '../engine/vec/Vec2DLegacy';
 
 export class VehicleController {
     private body: RigidBody2D;
@@ -41,7 +41,7 @@ export class VehicleController {
     }
 
     #applyThrottleForce() {
-        const forward = Vec2D.fromPolar(1, this.body.angle);
+        const forward = Vec2DLegacy.fromPolar(1, this.body.angle);
         const force = forward.scale(this.throttle * this.maxForce);
         this.body.applyForce(force);
     }
@@ -51,7 +51,7 @@ export class VehicleController {
         const speed = velocity.length;
         if (speed <= 0.01 || Math.abs(this.steering) <= 0.01) return;
 
-        const forward = Vec2D.fromPolar(1, this.body.angle);
+        const forward = Vec2DLegacy.fromPolar(1, this.body.angle);
         const alignment = forward.dot(velocity.normalize());
 
         const currentDir = velocity.angle;
@@ -66,7 +66,7 @@ export class VehicleController {
         const turn = Math.sign(delta) * Math.min(Math.abs(delta), maxTurn);
         const newAngle = currentDir + turn;
 
-        this.body.velocity = Vec2D.fromPolar(speed, newAngle);
+        this.body.velocity = Vec2DLegacy.fromPolar(speed, newAngle);
     }
 
     #rotateBodyIfMoving(dt: number) {
@@ -101,7 +101,7 @@ export class VehicleController {
 
         // Обнуление малой скорости
         if (speed < this.velocityEpsilon && this.throttle === 0) {
-            this.body.velocity = Vec2D.zero();
+            this.body.velocity = Vec2DLegacy.zero();
             this.body.angularVelocity = 0;
         }
     }

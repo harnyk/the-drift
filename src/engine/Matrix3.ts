@@ -1,4 +1,4 @@
-import { Vec2D } from "./vec/Vec2D";
+import { Vec2DLegacy } from "./vec/Vec2DLegacy";
 
 
 export class Matrix3 {
@@ -43,12 +43,12 @@ export class Matrix3 {
         return new Matrix3(r);
     }
 
-    transformPoint(p: Vec2D): Vec2D {
+    transformPoint(p: Vec2DLegacy): Vec2DLegacy {
         const [a, b, c, d, e, f, g, h, i] = this.values;
         const x = p.x, y = p.y;
         const newX = a * x + b * y + c;
         const newY = d * x + e * y + f;
-        return new Vec2D(newX, newY);
+        return new Vec2DLegacy(newX, newY);
     }
 
     invert(): Matrix3 {

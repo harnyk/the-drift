@@ -1,22 +1,22 @@
-import { Vec2D } from '../../engine/vec/Vec2D';
+import { Vec2DLegacy } from '../../engine/vec/Vec2DLegacy';
 import { Renderable } from '../../engine/Renderable';
 import { Viewport } from '../../engine/Viewport';
 
 export class RegularPolygonRenderable implements Renderable {
-    position: Vec2D;
+    position: Vec2DLegacy;
     radius: number;
     sides: number;
     angle: number;
     color: string;
 
     constructor({
-        position = Vec2D.zero(),
+        position = Vec2DLegacy.zero(),
         radius = 0.5,
         sides = 3,
         angle = 0,
         color = 'blue',
     }: {
-        position?: Vec2D;
+        position?: Vec2DLegacy;
         radius?: number;
         sides?: number;
         angle?: number;
@@ -36,7 +36,7 @@ export class RegularPolygonRenderable implements Renderable {
 
         ctx.beginPath();
         for (let i = 0; i < this.sides; i++) {
-            const local = Vec2D.fromPolar(this.radius, (2 * Math.PI * i) / this.sides);
+            const local = Vec2DLegacy.fromPolar(this.radius, (2 * Math.PI * i) / this.sides);
             if (i === 0) ctx.moveTo(local.x, local.y);
             else ctx.lineTo(local.x, local.y);
         }

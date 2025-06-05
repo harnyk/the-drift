@@ -1,14 +1,14 @@
 import { Matrix3 } from "./Matrix3";
-import { Vec2D } from "./vec/Vec2D";
+import { Vec2DLegacy } from "./vec/Vec2DLegacy";
 
 
 export class Viewport {
-    center: Vec2D; // координаты центра камеры в мире (обычно позиция машинки)
+    center: Vec2DLegacy; // координаты центра камеры в мире (обычно позиция машинки)
     zoom: number; // масштаб: сколько пикселей на одну единицу мира
-    canvasSize: Vec2D; // размер канваса в пикселях
+    canvasSize: Vec2DLegacy; // размер канваса в пикселях
     rotation: number; // угол поворота камеры в радианах
 
-    constructor(center: Vec2D, zoom: number, canvasSize: Vec2D, rotation = 0) {
+    constructor(center: Vec2DLegacy, zoom: number, canvasSize: Vec2DLegacy, rotation = 0) {
         this.center = center;
         this.zoom = zoom;
         this.canvasSize = canvasSize;
@@ -29,11 +29,11 @@ export class Viewport {
         return this.worldToScreen.invert();
     }
 
-    worldToScreenPoint(p: Vec2D): Vec2D {
+    worldToScreenPoint(p: Vec2DLegacy): Vec2DLegacy {
         return this.worldToScreen.transformPoint(p);
     }
 
-    screenToWorldPoint(p: Vec2D): Vec2D {
+    screenToWorldPoint(p: Vec2DLegacy): Vec2DLegacy {
         return this.screenToWorld.transformPoint(p);
     }
 }

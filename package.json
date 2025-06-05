@@ -6,7 +6,8 @@
     "build": "vite build",
     "preview": "vite preview",
     "deploy:prod": "vercel --prod",
-    "test": "jest"
+    "test": "jest",
+    "typecheck": "tsc --noEmit"
   },
   "dependencies": {
     "react": "^18.2.0",

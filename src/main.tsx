@@ -1,6 +1,6 @@
 import { FixedTimestepIntegrator } from './engine/FixedTimestepIntegrator';
 import { Grid } from './engine/Grid';
-import { Vec2D } from './engine/vec/Vec2D';
+import { Vec2DLegacy } from './engine/vec/Vec2DLegacy';
 import { Viewport } from './engine/Viewport';
 import { World } from './engine/World';
 import { WorldRenderer } from './engine/WorldRenderer';
@@ -22,9 +22,9 @@ function createRoadBlocks() {
             const color = Math.random() < 0.5 ? '#a00' : '#0a0';
             roadBlocks.push(
                 new Block(
-                    new Vec2D(x * 7, y * 7 + 5),
+                    new Vec2DLegacy(x * 7, y * 7 + 5),
                     0,
-                    new Vec2D(0.5, 0.5),
+                    new Vec2DLegacy(0.5, 0.5),
                     color
                 )
             );
@@ -59,9 +59,9 @@ function main() {
     const ctx = canvas.getContext('2d')!;
 
     const viewport = new Viewport(
-        new Vec2D(0, 0),
+        new Vec2DLegacy(0, 0),
         50,
-        new Vec2D(canvas.width, canvas.height)
+        new Vec2DLegacy(canvas.width, canvas.height)
     );
 
     const renderer = new WorldRenderer(ctx, viewport);
@@ -74,8 +74,8 @@ function main() {
     const roadBlocks = createRoadBlocks();
     const colliderToBlock = new Map<CollisionBody, Block>();
     const grid = new Grid(1, '#ddd');
-    const car = new Car(new Vec2D(0, 0), fromDeg(90));
-    const terrorist = new Terrorist(new Vec2D(10, 10), fromDeg(90), colliderToBlock);
+    const car = new Car(new Vec2DLegacy(0, 0), fromDeg(90));
+    const terrorist = new Terrorist(new Vec2DLegacy(10, 10), fromDeg(90), colliderToBlock);
     const compass = new CompassRenderable();
     const speedometer = new SpeedometerRenderable(car.body);
 
@@ -106,7 +106,7 @@ function main() {
         viewport.center = viewport.screenToWorldPoint(
             viewport
                 .worldToScreenPoint(car.body.position)
-                .sub(new Vec2D(0, canvas.height * 0.25))
+                .sub(new Vec2DLegacy(0, canvas.height * 0.25))
         );
 
         const collisions = collisionDetector

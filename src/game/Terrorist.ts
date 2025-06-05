@@ -1,7 +1,7 @@
 import { CollisionBody } from '../engine/physics/CollisionBody';
 import { RegularPolygonCollisionBody } from '../engine/physics/RegularPolygonCollisionBody';
 import { RigidBody2D } from '../engine/physics/RigidBody2D';
-import { Vec2D } from '../engine/vec/Vec2D';
+import { Vec2DLegacy } from '../engine/vec/Vec2DLegacy';
 import { Block } from './Block';
 import { RegularPolygonRenderable } from './renderables/RegularPolygonRenderable';
 
@@ -12,7 +12,7 @@ export class Terrorist {
     private timeAccumulator: number = 0;
 
     constructor(
-        position: Vec2D,
+        position: Vec2DLegacy,
         angle = 0,
         public readonly colliderToBlock: Map<CollisionBody, Block>
     ) {
@@ -58,7 +58,7 @@ export class Terrorist {
     }
 
     #getAveragePositionOfAllBlocks() {
-        let sum = new Vec2D(0, 0);
+        let sum = new Vec2DLegacy(0, 0);
         for (const block of this.colliderToBlock.values()) {
             sum = sum.add(block.renderable.position);
         }
