@@ -1,14 +1,13 @@
 import { Vec2D } from '../vec/Vec2D';
-import { Vec2DLegacy } from '../vec/Vec2DLegacy';
 import { CollisionBody } from './CollisionBody';
 import { BodyType } from './CollisionDetector';
 
 export class BoxCollisionBody extends CollisionBody {
-    size: Vec2DLegacy;
+    size: Vec2D;
 
     constructor(
-        position: Vec2DLegacy,
-        size: Vec2DLegacy,
+        position: Vec2D,
+        size: Vec2D,
         angle = 0,
         type: BodyType = 'dynamic'
     ) {
@@ -28,8 +27,9 @@ export class BoxCollisionBody extends CollisionBody {
         }
     }
 
+    #halfSize = new Vec2D();
     protected computeVertices(): void {
-        const half = this.size.scale(0.5);
+        const half = this.#halfSize.assign(this.size).scale(0.5);
 
         this.vertices[0].set(-half.x, -half.y);
         this.vertices[1].set(half.x, -half.y);

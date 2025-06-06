@@ -20,7 +20,7 @@ export class Terrorist {
         const sides = 5;
 
         this.renderable = new RegularPolygonRenderable({
-            position: position,
+            position,
             radius,
             sides,
             angle: angle,
@@ -28,7 +28,7 @@ export class Terrorist {
         });
 
         this.collider = new RegularPolygonCollisionBody(
-            position.toLegacy(),
+            position,
             radius,
             sides,
             angle,

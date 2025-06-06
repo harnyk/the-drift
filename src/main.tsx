@@ -75,7 +75,7 @@ function main() {
     const roadBlocks = createRoadBlocks();
     const colliderToBlock = new Map<CollisionBody, Block>();
     const grid = new Grid(1, '#ddd');
-    const car = new Car(new Vec2DLegacy(0, 0), fromDeg(90));
+    const car = new Car(new Vec2D().set(0, 0), fromDeg(90));
     const terrorist = new Terrorist(
         new Vec2D().set(10, 10),
         fromDeg(90),

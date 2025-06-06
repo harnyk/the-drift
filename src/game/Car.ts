@@ -1,7 +1,7 @@
 import { BoxCollisionBody } from '../engine/physics/BoxCollisionBody';
 import { CollisionBody } from '../engine/physics/CollisionBody';
 import { RigidBody2D } from '../engine/physics/RigidBody2D';
-import { Vec2DLegacy } from '../engine/vec/Vec2DLegacy';
+import { Vec2D } from '../engine/vec/Vec2D';
 import { CarRenderable } from './renderables/CarRenderable';
 import { VehicleController } from './VehicleController';
 
@@ -11,7 +11,7 @@ export class Car {
     readonly renderable: CarRenderable;
     readonly collider: CollisionBody;
 
-    constructor(initialPosition: Vec2DLegacy, initialRotation = 0) {
+    constructor(initialPosition: Vec2D, initialRotation = 0) {
         this.body = new RigidBody2D(initialPosition, initialRotation, 1, 0.1);
 
         this.renderable = new CarRenderable(this.body.position);
@@ -21,8 +21,8 @@ export class Car {
         this.controller.setAngularFriction(1);
 
         this.collider = new BoxCollisionBody(
-            this.body.position.toLegacy(),
-            new Vec2DLegacy(1, 0.5),
+            this.body.position,
+            new Vec2D().set(1, 0.5),
             this.body.angle,
             'dynamic'
         );

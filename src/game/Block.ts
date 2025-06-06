@@ -21,8 +21,8 @@ export class Block {
         });
 
         this.collider = new BoxCollisionBody(
-            this.position.toLegacy(),
-            this.size.toLegacy(),
+            this.position,
+            this.size,
             this.angle,
             'static'
         );
