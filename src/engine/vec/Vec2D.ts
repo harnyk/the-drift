@@ -100,8 +100,10 @@ export class Vec2D {
     rotate(angleRad: number) {
         const c = Math.cos(angleRad);
         const s = Math.sin(angleRad);
-        this.x = this.x * c - this.y * s;
-        this.y = this.x * s + this.y * c;
+        const x = this.x;
+        const y = this.y;
+        this.x = x * c - y * s;
+        this.y = x * s + y * c;
         return this;
     }
 
