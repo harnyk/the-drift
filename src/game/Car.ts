@@ -31,7 +31,7 @@ export class Car {
     update(dt: number) {
         this.renderable.position.assign(this.body.position);
         this.renderable.angle = this.body.angle;
-        this.collider.position = this.body.position.toLegacy();
+        this.collider.position.assign(this.body.position);
         this.collider.angle = this.body.angle;
 
         this.body.update(dt);

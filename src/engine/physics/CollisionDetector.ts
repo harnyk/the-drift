@@ -1,4 +1,4 @@
-import { Vec2DLegacy } from '../vec/Vec2DLegacy';
+import { ImmutableVec2D } from '../vec/Vec2D';
 import { CollisionBody } from './CollisionBody';
 
 export type BodyType = 'static' | 'dynamic';
@@ -46,9 +46,9 @@ export class CollisionDetector {
         return true;
     }
 
-    #project(points: Vec2DLegacy[], axis: Vec2DLegacy): [number, number] {
-        const norm = axis.normalize();
-        const values = points.map((p) => p.dot(norm));
+    #project(points: ImmutableVec2D[], axis: ImmutableVec2D): [number, number] {
+        const norm = axis.clone().normalize();
+        const values = points.map((p) => p.clone().dot(norm));
         return [Math.min(...values), Math.max(...values)];
     }
 }

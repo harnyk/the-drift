@@ -5,7 +5,14 @@ export interface ImmutableVec2D {
     readonly x: number;
     readonly y: number;
     readonly isVec2D: true;
+    /**
+     * @deprecated do not use Vec2DLegacy
+     */
     toLegacy(): Vec2DLegacy;
+    /**
+     * @deprecated do not clone
+     */
+    clone(): Vec2D;
     length: number;
     angle: number;
 }
