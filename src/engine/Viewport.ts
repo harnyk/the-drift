@@ -73,7 +73,6 @@ export class Viewport {
 
     readonly #worldBounds: Bounds = { minX: 0, maxX: 0, minY: 0, maxY: 0 };
 
-    //TODO: make alloc free
     getWorldBounds(): Readonly<Bounds> {
         const size = this.canvasSize;
 
