@@ -1,3 +1,4 @@
+import { Context } from '../Context';
 import { ImmutableVec2D, Vec2D } from '../vec/Vec2D';
 import { CollisionBody } from './CollisionBody';
 
@@ -8,6 +9,8 @@ export type CollisionPair = { a: CollisionBody; b: CollisionBody };
 export class CollisionDetector {
     private bodies: CollisionBody[] = [];
 
+    constructor(private readonly context: Context) {}
+
     addBody(body: CollisionBody) {
         this.bodies.push(body);
     }
@@ -17,21 +20,23 @@ export class CollisionDetector {
         if (index >= 0) this.bodies.splice(index, 1);
     }
 
-    readonly #tmpAxis = new Vec2D();
-    readonly #tmpVec = new Vec2D();
     detect(): CollisionPair[] {
-        const pairs: CollisionPair[] = [];
-        for (let i = 0; i < this.bodies.length; i++) {
-            const a = this.bodies[i];
-            for (let j = i + 1; j < this.bodies.length; j++) {
-                const b = this.bodies[j];
-                if (a.type === 'static' && b.type === 'static') continue;
-                if (this.#overlap(a, b, this.#tmpAxis, this.#tmpVec)) {
-                    pairs.push({ a, b });
+        return this.context.vectorPool.borrow((acquire) => {
+            const tmpAxis = acquire();
+            const tmp = acquire();
+            const pairs: CollisionPair[] = [];
+            for (let i = 0; i < this.bodies.length; i++) {
+                const a = this.bodies[i];
+                for (let j = i + 1; j < this.bodies.length; j++) {
+                    const b = this.bodies[j];
+                    if (a.type === 'static' && b.type === 'static') continue;
+                    if (this.#overlap(a, b, tmpAxis, tmp)) {
+                        pairs.push({ a, b });
+                    }
                 }
             }
-        }
-        return pairs;
+            return pairs;
+        });
     }
 
     #overlap(

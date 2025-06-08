@@ -15,14 +15,16 @@ import { CompassRenderable } from './game/renderables/CompassRenderable';
 import { SpeedometerRenderable } from './game/renderables/SpeedometerRenderable';
 import { Terrorist } from './game/Terrorist';
 import { Vec2D } from './engine/vec/Vec2D';
+import { Context } from './engine/Context';
 
-function createRoadBlocks() {
+function createRoadBlocks(context: Context) {
     const roadBlocks: Block[] = [];
     for (let x = 0; x < 4; x++) {
         for (let y = 0; y < 4; y++) {
             const color = Math.random() < 0.5 ? '#a00' : '#0a0';
             roadBlocks.push(
                 new Block(
+                    context,
                     new Vec2D().set(x * 7, y * 7 + 5),
                     new Vec2D().set(0.5, 0.5),
                     0,
@@ -54,28 +56,34 @@ function setupKeyboardControl(
 }
 
 function main() {
+    const context = new Context();
+    setInterval(() => {
+        console.log(context.vectorPool.stats);
+    }, 1000);
+
     const canvas: HTMLCanvasElement = document.querySelector('canvas#canvas')!;
     canvas.width = document.body.clientWidth;
     canvas.height = document.body.clientHeight;
-    const ctx = canvas.getContext('2d')!;
+    const canvasContext = canvas.getContext('2d')!;
 
     const viewport = new Viewport(
+        context,
         new Vec2DLegacy(0, 0),
         50,
         new Vec2DLegacy(canvas.width, canvas.height)
     );
 
-    const renderer = new WorldRenderer(ctx, viewport);
+    const renderer = new WorldRenderer(context, canvasContext, viewport);
 
     const gameController = new KeyboardControl(KeyCodeWASD);
     gameController.attach();
 
-    const world = new World();
+    const world = new World(context);
 
-    const roadBlocks = createRoadBlocks();
+    const roadBlocks = createRoadBlocks(context);
     const colliderToBlock = new Map<CollisionBody, Block>();
-    const grid = new Grid(1, '#ddd');
-    const car = new Car(new Vec2D().set(0, 0), fromDeg(90));
+    const grid = new Grid(context, 1, '#ddd');
+    const car = new Car(context, new Vec2D().set(0, 0), fromDeg(90));
     const terrorist = new Terrorist(
         new Vec2D().set(10, 10),
         fromDeg(90),
@@ -85,7 +93,7 @@ function main() {
     const speedometer = new SpeedometerRenderable(car.body);
 
     world.add(grid);
-    const collisionDetector = new CollisionDetector();
+    const collisionDetector = new CollisionDetector(context);
     for (const block of roadBlocks) {
         world.add(block.renderable);
         collisionDetector.addBody(block.collider);

@@ -1,6 +1,14 @@
-import { Matrix3 } from "./Matrix3";
-import { Vec2DLegacy } from "./vec/Vec2DLegacy";
+import { Context } from './Context';
+import { Matrix3 } from './Matrix3';
+import { ImmutableVec2D, Vec2D } from './vec/Vec2D';
+import { Vec2DLegacy } from './vec/Vec2DLegacy';
 
+interface Bounds {
+    minX: number;
+    maxX: number;
+    minY: number;
+    maxY: number;
+}
 
 export class Viewport {
     center: Vec2DLegacy; // координаты центра камеры в мире (обычно позиция машинки)
@@ -8,7 +16,13 @@ export class Viewport {
     canvasSize: Vec2DLegacy; // размер канваса в пикселях
     rotation: number; // угол поворота камеры в радианах
 
-    constructor(center: Vec2DLegacy, zoom: number, canvasSize: Vec2DLegacy, rotation = 0) {
+    constructor(
+        private readonly context: Context,
+        center: Vec2DLegacy,
+        zoom: number,
+        canvasSize: Vec2DLegacy,
+        rotation = 0
+    ) {
         this.center = center;
         this.zoom = zoom;
         this.canvasSize = canvasSize;
@@ -29,11 +43,41 @@ export class Viewport {
         return this.worldToScreen.invert();
     }
 
-    worldToScreenPoint(p: Vec2DLegacy): Vec2DLegacy {
-        return this.worldToScreen.transformPoint(p);
+    worldToScreenPoint(p: ImmutableVec2D | Vec2DLegacy): Vec2DLegacy {
+        return this.worldToScreen.transformPoint(
+            'isLegacy' in p ? p : p.toLegacy()
+        );
     }
 
-    screenToWorldPoint(p: Vec2DLegacy): Vec2DLegacy {
-        return this.screenToWorld.transformPoint(p);
+    screenToWorldPoint(p: ImmutableVec2D | Vec2DLegacy): Vec2DLegacy {
+        return this.screenToWorld.transformPoint(
+            'isLegacy' in p ? p : p.toLegacy()
+        );
+    }
+
+    readonly #worldBounds: Bounds = { minX: 0, maxX: 0, minY: 0, maxY: 0 };
+
+    //TODO: make alloc free
+    getWorldBounds(): Readonly<Bounds> {
+        const size = this.canvasSize;
+
+        this.context.vectorPool.borrow((acquire) => {
+            const corners = [
+                acquire().set(0, 0),
+                acquire().set(size.x, 0),
+                acquire().set(size.x, size.y),
+                acquire().set(0, size.y),
+            ].map((p) => this.screenToWorldPoint(p));
+
+            const xs = corners.map((p) => p.x);
+            const ys = corners.map((p) => p.y);
+
+            this.#worldBounds.minX = Math.min(...xs);
+            this.#worldBounds.maxX = Math.max(...xs);
+            this.#worldBounds.minY = Math.min(...ys);
+            this.#worldBounds.maxY = Math.max(...ys);
+        });
+
+        return this.#worldBounds;
     }
 }

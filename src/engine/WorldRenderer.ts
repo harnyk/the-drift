@@ -1,3 +1,4 @@
+import { Context } from './Context';
 import { Vec2DLegacy } from './vec/Vec2DLegacy';
 import { Viewport } from './Viewport';
 import { World } from './World';
@@ -6,7 +7,11 @@ export class WorldRenderer {
     ctx: CanvasRenderingContext2D;
     viewport: Viewport;
 
-    constructor(ctx: CanvasRenderingContext2D, viewport: Viewport) {
+    constructor(
+        private readonly context: Context,
+        ctx: CanvasRenderingContext2D,
+        viewport: Viewport
+    ) {
         this.ctx = ctx;
         this.viewport = viewport;
     }

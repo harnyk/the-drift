@@ -1,3 +1,4 @@
+import { Context } from '../Context';
 import { Vec2D } from '../vec/Vec2D';
 import { CollisionBody } from './CollisionBody';
 import { BodyType } from './CollisionDetector';
@@ -6,6 +7,7 @@ export class BoxCollisionBody extends CollisionBody {
     size: Vec2D;
 
     constructor(
+        private readonly context: Context,
         position: Vec2D,
         size: Vec2D,
         angle = 0,
