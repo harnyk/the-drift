@@ -62,20 +62,41 @@ export class Viewport {
         const size = this.canvasSize;
 
         this.context.vectorPool.borrow((acquire) => {
-            const corners = [
-                Vec2D.set(acquire(), 0, 0),
-                Vec2D.set(acquire(), size.x, 0),
-                Vec2D.set(acquire(), size.x, size.y),
-                Vec2D.set(acquire(), 0, size.y),
-            ].map((p) => this.screenToWorldPoint(p));
+            const corner0 = this.screenToWorldPoint(Vec2D.set(acquire(), 0, 0));
+            const corner1 = this.screenToWorldPoint(
+                Vec2D.set(acquire(), size.x, 0)
+            );
+            const corner2 = this.screenToWorldPoint(
+                Vec2D.set(acquire(), size.x, size.y)
+            );
+            const corner3 = this.screenToWorldPoint(
+                Vec2D.set(acquire(), 0, size.y)
+            );
 
-            const xs = corners.map((p) => p.x);
-            const ys = corners.map((p) => p.y);
-
-            this.#worldBounds.minX = Math.min(...xs);
-            this.#worldBounds.maxX = Math.max(...xs);
-            this.#worldBounds.minY = Math.min(...ys);
-            this.#worldBounds.maxY = Math.max(...ys);
+            this.#worldBounds.minX = Math.min(
+                corner0.x,
+                corner1.x,
+                corner2.x,
+                corner3.x
+            );
+            this.#worldBounds.maxX = Math.max(
+                corner0.x,
+                corner1.x,
+                corner2.x,
+                corner3.x
+            );
+            this.#worldBounds.minY = Math.min(
+                corner0.y,
+                corner1.y,
+                corner2.y,
+                corner3.y
+            );
+            this.#worldBounds.maxY = Math.max(
+                corner0.y,
+                corner1.y,
+                corner2.y,
+                corner3.y
+            );
         });
 
         return this.#worldBounds;
