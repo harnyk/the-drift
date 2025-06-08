@@ -1,5 +1,5 @@
 import { Context } from './Context';
-import { Matrix3Legacy } from './Matrix3';
+import { Matrix3Legacy } from './Matrix3Legacy';
 import { ImmutableVec2D, Vec2D } from './vec/Vec2D';
 import { Vec2DLegacy } from './vec/Vec2DLegacy';
 

@@ -1,4 +1,4 @@
-import { Matrix3Legacy } from "./Matrix3";
+import { Matrix3Legacy } from "./Matrix3Legacy";
 import { Vec2DLegacy } from "./vec/Vec2DLegacy";
 
 
