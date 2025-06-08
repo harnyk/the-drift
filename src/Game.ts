@@ -1,21 +1,19 @@
+import { Context } from './engine/Context';
 import { FixedTimestepIntegrator } from './engine/FixedTimestepIntegrator';
+import { fromDeg } from './engine/fromDeg';
 import { Grid } from './engine/Grid';
+import { CollisionDetector } from './engine/physics/CollisionDetector';
+import { Vec2D } from './engine/vec/Vec2D';
+import { Vec2DAverager } from './engine/Vec2DAverager';
 import { Viewport } from './engine/Viewport';
 import { World } from './engine/World';
 import { WorldRenderer } from './engine/WorldRenderer';
-import { fromDeg } from './engine/fromDeg';
-import { CollisionBody } from './engine/physics/CollisionBody';
 import { Block } from './game/Block';
 import { Car } from './game/Car';
-import { VehicleController } from './game/VehicleController';
 import { KeyboardControl, KeyCodeWASD } from './game/controls/KeyboardControl';
 import { CompassRenderable } from './game/renderables/CompassRenderable';
 import { SpeedometerRenderable } from './game/renderables/SpeedometerRenderable';
 import { Terrorist } from './game/Terrorist';
-import { Vec2D } from './engine/vec/Vec2D';
-import { Context } from './engine/Context';
-import { CollisionDetector } from './engine/physics/CollisionDetector';
-import { Vec2DAverager } from './engine/Vec2DAverager';
 
 export class Game {
     private context = new Context();
@@ -25,7 +23,6 @@ export class Game {
     private world = new World(this.context);
     private integrator = new FixedTimestepIntegrator(60);
     private controller: KeyboardControl;
-    // private colliderToBlock = new Map<CollisionBody, Block>();
     private terroristGravityCenterAverager = new Vec2DAverager();
 
     private car!: Car;
@@ -73,6 +70,8 @@ export class Game {
                         this.terroristGravityCenterAverager.remove(
                             body.position
                         );
+                    } else if (other === this.terrorist.collider) {
+                        block.invertColor();
                     }
                 },
             });
@@ -105,14 +104,14 @@ export class Game {
         const blocks: Block[] = [];
         for (let x = 0; x < 4; x++) {
             for (let y = 0; y < 4; y++) {
-                const color = Math.random() < 0.5 ? '#a00' : '#0a0';
                 blocks.push(
                     new Block(
                         this.context,
                         Vec2D.set(new Vec2D(), x * 7, y * 7 + 5),
                         Vec2D.set(new Vec2D(), 0.5, 0.5),
                         0,
-                        color
+                        '#0a0',
+                        '#a00'
                     )
                 );
             }
