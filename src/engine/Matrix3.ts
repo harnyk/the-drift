@@ -1,80 +1,144 @@
-import { Vec2DLegacy } from "./vec/Vec2DLegacy";
-
+import { Vec2D } from './vec/Vec2D';
 
 export class Matrix3 {
-    values: number[];
+    values: number[] = [1, 0, 0, 0, 1, 0, 0, 0, 1]; // row-major
 
-    constructor(values?: number[]) {
-        this.values = values || [1, 0, 0, 0, 1, 0, 0, 0, 1];
+    assign(other: Matrix3): void {
+        for (let i = 0; i < 9; i++) {
+            this.values[i] = other.values[i];
+        }
     }
 
-    static identity() {
-        return new Matrix3();
+    setIdentity(): void {
+        const v = this.values;
+        v[0] = 1;
+        v[1] = 0;
+        v[2] = 0;
+
+        v[3] = 0;
+        v[4] = 1;
+        v[5] = 0;
+
+        v[6] = 0;
+        v[7] = 0;
+        v[8] = 1;
     }
 
-    static translation(tx: number, ty: number) {
-        return new Matrix3([1, 0, tx, 0, 1, ty, 0, 0, 1]);
+    setTranslation(tx: number, ty: number): void {
+        const v = this.values;
+        v[0] = 1;
+        v[1] = 0;
+        v[2] = tx;
+
+        v[3] = 0;
+        v[4] = 1;
+        v[5] = ty;
+
+        v[6] = 0;
+        v[7] = 0;
+        v[8] = 1;
     }
 
-    static rotation(angleRad: number) {
+    setRotation(angleRad: number): void {
         const c = Math.cos(angleRad);
         const s = Math.sin(angleRad);
-        return new Matrix3([c, -s, 0, s, c, 0, 0, 0, 1]);
+        const v = this.values;
+        v[0] = c;
+        v[1] = -s;
+        v[2] = 0;
+
+        v[3] = s;
+        v[4] = c;
+        v[5] = 0;
+
+        v[6] = 0;
+        v[7] = 0;
+        v[8] = 1;
     }
 
-    static scale(sx: number, sy: number) {
-        return new Matrix3([sx, 0, 0, 0, sy, 0, 0, 0, 1]);
+    setScale(sx: number, sy: number): void {
+        const v = this.values;
+        v[0] = sx;
+        v[1] = 0;
+        v[2] = 0;
+
+        v[3] = 0;
+        v[4] = sy;
+        v[5] = 0;
+
+        v[6] = 0;
+        v[7] = 0;
+        v[8] = 1;
     }
 
-    multiply(other: Matrix3): Matrix3 {
+    multiply(other: Matrix3): void {
         const a = this.values;
         const b = other.values;
-        const r = new Array(9).fill(0);
+        const r0 = a[0] * b[0] + a[1] * b[3] + a[2] * b[6];
+        const r1 = a[0] * b[1] + a[1] * b[4] + a[2] * b[7];
+        const r2 = a[0] * b[2] + a[1] * b[5] + a[2] * b[8];
 
-        for (let row = 0; row < 3; row++) {
-            for (let col = 0; col < 3; col++) {
-                r[row * 3 + col] =
-                    a[row * 3 + 0] * b[0 * 3 + col] +
-                    a[row * 3 + 1] * b[1 * 3 + col] +
-                    a[row * 3 + 2] * b[2 * 3 + col];
-            }
-        }
+        const r3 = a[3] * b[0] + a[4] * b[3] + a[5] * b[6];
+        const r4 = a[3] * b[1] + a[4] * b[4] + a[5] * b[7];
+        const r5 = a[3] * b[2] + a[4] * b[5] + a[5] * b[8];
 
-        return new Matrix3(r);
+        const r6 = a[6] * b[0] + a[7] * b[3] + a[8] * b[6];
+        const r7 = a[6] * b[1] + a[7] * b[4] + a[8] * b[7];
+        const r8 = a[6] * b[2] + a[7] * b[5] + a[8] * b[8];
+
+        a[0] = r0;
+        a[1] = r1;
+        a[2] = r2;
+
+        a[3] = r3;
+        a[4] = r4;
+        a[5] = r5;
+
+        a[6] = r6;
+        a[7] = r7;
+        a[8] = r8;
     }
 
-    transformPoint(p: Vec2DLegacy): Vec2DLegacy {
-        const [a, b, c, d, e, f, g, h, i] = this.values;
-        const x = p.x, y = p.y;
-        const newX = a * x + b * y + c;
-        const newY = d * x + e * y + f;
-        return new Vec2DLegacy(newX, newY);
+    transformPointInPlace(p: Vec2D): void {
+        const v = this.values;
+        const x = p.x;
+        const y = p.y;
+        const newX = v[0] * x + v[1] * y + v[2];
+        const newY = v[3] * x + v[4] * y + v[5];
+        p.set(newX, newY);
     }
 
-    invert(): Matrix3 {
+    invertInPlace(): void {
         const m = this.values;
         const [a, b, c, d, e, f, g, h, i] = m;
 
-        const det = a * e * i +
-            b * f * g +
-            c * d * h -
-            c * e * g -
-            b * d * i -
-            a * f * h;
+        const det =
+            a * (e * i - f * h) - b * (d * i - f * g) + c * (d * h - e * g);
+
         if (det === 0) throw new Error('Matrix not invertible');
 
-        const inv = [
-            (e * i - f * h) / det,
-            (c * h - b * i) / det,
-            (b * f - c * e) / det,
-            (f * g - d * i) / det,
-            (a * i - c * g) / det,
-            (c * d - a * f) / det,
-            (d * h - e * g) / det,
-            (b * g - a * h) / det,
-            (a * e - b * d) / det,
-        ];
+        const inv0 = (e * i - f * h) / det;
+        const inv1 = -(b * i - c * h) / det;
+        const inv2 = (b * f - c * e) / det;
 
-        return new Matrix3(inv);
+        const inv3 = -(d * i - f * g) / det;
+        const inv4 = (a * i - c * g) / det;
+        const inv5 = -(a * f - c * d) / det;
+
+        const inv6 = (d * h - e * g) / det;
+        const inv7 = -(a * h - b * g) / det;
+        const inv8 = (a * e - b * d) / det;
+
+        m[0] = inv0;
+        m[1] = inv1;
+        m[2] = inv2;
+
+        m[3] = inv3;
+        m[4] = inv4;
+        m[5] = inv5;
+
+        m[6] = inv6;
+        m[7] = inv7;
+        m[8] = inv8;
     }
 }

@@ -1,33 +1,37 @@
-import { CollisionBody } from '../engine/physics/CollisionBody';
+import { Context } from '../engine/Context';
 import { RegularPolygonCollisionBody } from '../engine/physics/RegularPolygonCollisionBody';
 import { RigidBody2D } from '../engine/physics/RigidBody2D';
-import { Vec2DLegacy } from '../engine/vec/Vec2DLegacy';
-import { Block } from './Block';
+import { Vec2D } from '../engine/vec/Vec2D';
+import { Vec2DAverager } from '../engine/Vec2DAverager';
 import { RegularPolygonRenderable } from './renderables/RegularPolygonRenderable';
 
 export class Terrorist {
     readonly renderable: RegularPolygonRenderable;
     readonly collider: RegularPolygonCollisionBody;
     readonly body: RigidBody2D;
-    private timeAccumulator: number = 0;
+
+    readonly #sum = new Vec2D();
+    #timeAccumulator: number = 0;
 
     constructor(
-        position: Vec2DLegacy,
+        private readonly context: Context,
+        position: Vec2D,
         angle = 0,
-        public readonly colliderToBlock: Map<CollisionBody, Block>
+        private readonly averageTarget: Vec2DAverager
     ) {
         const radius = 3;
         const sides = 5;
 
         this.renderable = new RegularPolygonRenderable({
-            position: position,
+            position,
             radius,
             sides,
             angle: angle,
-            color: 'red',
+            color: '#333',
         });
 
         this.collider = new RegularPolygonCollisionBody(
+            this.context,
             position,
             radius,
             sides,
@@ -40,28 +44,21 @@ export class Terrorist {
     }
 
     update(dt: number) {
-        this.timeAccumulator += dt;
-        if (this.timeAccumulator >= 1) {
-            if (this.colliderToBlock.size > 0) {
-                const center = this.#getAveragePositionOfAllBlocks();
-                const v = center.sub(this.body.position).normalize().scale(50);
-                this.body.applyForce(v);
+        this.#timeAccumulator += dt;
+        if (this.#timeAccumulator >= 1) {
+            if (this.averageTarget.computeAverage(this.#sum)) {
+                this.#sum.sub(this.body.position);
+                this.#sum.normalize();
+                this.#sum.scale(50);
+                this.body.applyForce(this.#sum);
             }
-            this.timeAccumulator = 0;
+            this.#timeAccumulator = 0;
         }
 
-        this.renderable.position = this.body.position;
+        this.renderable.position.assign(this.body.position);
         this.renderable.angle = this.body.angle;
-        this.collider.position = this.body.position;
+        this.collider.position.assign(this.body.position);
         this.collider.angle = this.body.angle;
         this.body.update(dt);
-    }
-
-    #getAveragePositionOfAllBlocks() {
-        let sum = new Vec2DLegacy(0, 0);
-        for (const block of this.colliderToBlock.values()) {
-            sum = sum.add(block.renderable.position);
-        }
-        return sum.scale(1 / this.colliderToBlock.size);
     }
 }

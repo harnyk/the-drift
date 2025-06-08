@@ -1,9 +1,11 @@
-import { Renderable } from "./Renderable";
-import { Viewport } from "./Viewport";
-
+import { Context } from './Context';
+import { Renderable } from './Renderable';
+import { Viewport } from './Viewport';
 
 export class World {
     objects: Renderable[] = [];
+
+    constructor(private readonly context: Context) {}
 
     add(obj: Renderable) {
         this.objects.push(obj);
