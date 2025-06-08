@@ -1,3 +1,4 @@
+import { Context } from '../engine/Context';
 import { CollisionBody } from '../engine/physics/CollisionBody';
 import { RegularPolygonCollisionBody } from '../engine/physics/RegularPolygonCollisionBody';
 import { RigidBody2D } from '../engine/physics/RigidBody2D';
@@ -12,6 +13,7 @@ export class Terrorist {
     private timeAccumulator: number = 0;
 
     constructor(
+        private readonly context: Context,
         position: Vec2D,
         angle = 0,
         public readonly colliderToBlock: Map<CollisionBody, Block>
@@ -28,6 +30,7 @@ export class Terrorist {
         });
 
         this.collider = new RegularPolygonCollisionBody(
+            this.context,
             position,
             radius,
             sides,
@@ -44,8 +47,8 @@ export class Terrorist {
         if (this.timeAccumulator >= 1) {
             if (this.colliderToBlock.size > 0) {
                 const center = this.#getAveragePositionOfAllBlocks();
-                center.sub(this.body.position)
-                center.normalize()
+                center.sub(this.body.position);
+                center.normalize();
                 center.scale(50);
                 this.body.applyForce(center);
             }

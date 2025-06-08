@@ -81,6 +81,7 @@ function main() {
     const grid = new Grid(context, 1, '#ddd');
     const car = new Car(context, Vec2D.set(new Vec2D(), 0, 0), fromDeg(90));
     const terrorist = new Terrorist(
+        context,
         Vec2D.set(new Vec2D(), 10, 10),
         fromDeg(90),
         colliderToBlock

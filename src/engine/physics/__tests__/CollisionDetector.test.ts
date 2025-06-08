@@ -98,6 +98,7 @@ describe('CollisionDetector', () => {
     it('detects collisions for regular polygons', () => {
         const detector = new CollisionDetector(fakeContext);
         const poly = new RegularPolygonCollisionBody(
+            fakeContext,
             Vec2D.set(new Vec2D(), 0, 0),
             1,
             10
