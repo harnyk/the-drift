@@ -44,9 +44,8 @@ export class VehicleController {
     #force = new Vec2D();
 
     #applyThrottleForce() {
-        this.#force
-            .assignPolar(1, this.body.angle)
-            .scale(this.throttle * this.maxForce);
+        this.#force.assignPolar(1, this.body.angle);
+        this.#force.scale(this.throttle * this.maxForce);
         this.body.applyForce(this.#force);
     }
 
@@ -98,13 +97,15 @@ export class VehicleController {
 
         // Speed limit
         const speed = this.body.velocity.length;
+        const vel = this.body.velocity;
         if (speed > this.maxSpeed) {
-            this.body.velocity.normalize().scale(this.maxSpeed);
+            vel.normalize();
+            vel.scale(this.maxSpeed);
         }
 
         // Nullify small speed
         if (speed < this.velocityEpsilon && this.throttle === 0) {
-            this.body.velocity.zero();
+            vel.zero();
             this.body.angularVelocity = 0;
         }
     }

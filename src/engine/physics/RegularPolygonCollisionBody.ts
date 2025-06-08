@@ -6,6 +6,7 @@ export class RegularPolygonCollisionBody extends CollisionBody {
     private radius: number;
     private sides: number;
 
+    // TODO: add context
     constructor(
         position: Vec2D,
         radius: number,
@@ -33,10 +34,10 @@ export class RegularPolygonCollisionBody extends CollisionBody {
 
     protected computeVertices(): void {
         for (let i = 0; i < this.sides; i++) {
-            this.vertices[i]
-                .assignPolar(this.radius, (2 * Math.PI * i) / this.sides)
-                .rotate(this.angle)
-                .add(this.position);
+            const vert = this.vertices[i];
+            vert.assignPolar(this.radius, (2 * Math.PI * i) / this.sides);
+            vert.rotate(this.angle);
+            vert.add(this.position);
         }
     }
 }

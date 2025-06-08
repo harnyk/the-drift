@@ -63,10 +63,10 @@ export class Viewport {
 
         this.context.vectorPool.borrow((acquire) => {
             const corners = [
-                acquire().set(0, 0),
-                acquire().set(size.x, 0),
-                acquire().set(size.x, size.y),
-                acquire().set(0, size.y),
+                Vec2D.set(acquire(), 0, 0),
+                Vec2D.set(acquire(), size.x, 0),
+                Vec2D.set(acquire(), size.x, size.y),
+                Vec2D.set(acquire(), 0, size.y),
             ].map((p) => this.screenToWorldPoint(p));
 
             const xs = corners.map((p) => p.x);

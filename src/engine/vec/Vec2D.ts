@@ -23,6 +23,12 @@ export class Vec2D {
 
     public readonly isVec2D = true;
 
+    static set(vec: Vec2D, x: number, y: number) {
+        vec.x = x;
+        vec.y = y;
+        return vec;
+    }
+
     toImmutable(): ImmutableVec2D {
         return this;
     }
@@ -30,24 +36,24 @@ export class Vec2D {
     set(x: number, y: number) {
         this.x = x;
         this.y = y;
-        return this;
     }
 
     assign(vec: IVec2D) {
-        return this.set(vec.x, vec.y);
+        this.set(vec.x, vec.y);
     }
 
     assignPolar(length: number, angleRad: number) {
         this.x = Math.cos(angleRad) * length;
         this.y = Math.sin(angleRad) * length;
-        return this;
     }
 
     /**
      * @deprecated do not clone
      */
     clone() {
-        return new Vec2D().assign(this);
+        const v = new Vec2D();
+        v.assign(this);
+        return v;
     }
 
     /**
@@ -60,25 +66,21 @@ export class Vec2D {
     zero() {
         this.x = 0;
         this.y = 0;
-        return this;
     }
 
     scale(s: number) {
         this.x *= s;
         this.y *= s;
-        return this;
     }
 
     add(p: IVec2D) {
         this.x += p.x;
         this.y += p.y;
-        return this;
     }
 
     sub(p: IVec2D) {
         this.x -= p.x;
         this.y -= p.y;
-        return this;
     }
 
     dot(other: IVec2D): number {
@@ -104,7 +106,6 @@ export class Vec2D {
         const y = this.y;
         this.x = x * c - y * s;
         this.y = x * s + y * c;
-        return this;
     }
 
     normalize() {
@@ -115,6 +116,5 @@ export class Vec2D {
             this.x /= len;
             this.y /= len;
         }
-        return this;
     }
 }

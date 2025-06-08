@@ -28,7 +28,7 @@ export class Car {
         this.collider = new BoxCollisionBody(
             context,
             this.body.position,
-            new Vec2D().set(1, 0.5),
+            Vec2D.set(new Vec2D(), 1, 0.5),
             this.body.angle,
             'dynamic'
         );

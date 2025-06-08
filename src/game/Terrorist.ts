@@ -44,7 +44,9 @@ export class Terrorist {
         if (this.timeAccumulator >= 1) {
             if (this.colliderToBlock.size > 0) {
                 const center = this.#getAveragePositionOfAllBlocks();
-                center.sub(this.body.position).normalize().scale(50);
+                center.sub(this.body.position)
+                center.normalize()
+                center.scale(50);
                 this.body.applyForce(center.toLegacy());
             }
             this.timeAccumulator = 0;

@@ -31,7 +31,9 @@ export class BoxCollisionBody extends CollisionBody {
 
     #halfSize = new Vec2D();
     protected computeVertices(): void {
-        const half = this.#halfSize.assign(this.size).scale(0.5);
+        const half = this.#halfSize
+        half.assign(this.size)
+        half.scale(0.5);
 
         this.vertices[0].set(-half.x, -half.y);
         this.vertices[1].set(half.x, -half.y);
@@ -39,7 +41,9 @@ export class BoxCollisionBody extends CollisionBody {
         this.vertices[3].set(-half.x, half.y);
 
         for (let i = 0; i < 4; i++) {
-            this.vertices[i].rotate(this.angle).add(this.position);
+            const vert = this.vertices[i];
+            vert.rotate(this.angle)
+            vert.add(this.position);
         }
     }
 }

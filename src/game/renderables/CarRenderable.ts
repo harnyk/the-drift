@@ -7,13 +7,13 @@ export class CarRenderable implements Renderable {
     angle: number;
 
     #wheelCoords = [
-        new Vec2D().set(0.35, 0.3).toImmutable(),
-        new Vec2D().set(-0.35, 0.3).toImmutable(),
-        new Vec2D().set(0.35, -0.3).toImmutable(),
-        new Vec2D().set(-0.35, -0.3).toImmutable(),
+        Vec2D.set(new Vec2D(), 0.35, 0.3).toImmutable(),
+        Vec2D.set(new Vec2D(), -0.35, 0.3).toImmutable(),
+        Vec2D.set(new Vec2D(), 0.35, -0.3).toImmutable(),
+        Vec2D.set(new Vec2D(), -0.35, -0.3).toImmutable(),
     ];
 
-    #wheelSize = new Vec2D().set(0.2, 0.1).toImmutable();
+    #wheelSize = Vec2D.set(new Vec2D(), 0.2, 0.1).toImmutable();
 
     constructor(position: IVec2D, angle = 0) {
         this.position.assign(position);

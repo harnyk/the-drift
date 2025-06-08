@@ -68,12 +68,14 @@ export class CollisionDetector {
         axisBuf: Vec2D,
         tmp: Vec2D
     ): boolean {
-        axisBuf.assign(axis).normalize();
+        axisBuf.assign(axis)
+        axisBuf.normalize();
 
         let minA = Infinity;
         let maxA = -Infinity;
         for (let i = 0; i < vertsA.length; i++) {
-            const dot = tmp.assign(vertsA[i]).dot(axisBuf);
+            tmp.assign(vertsA[i])
+            const dot = tmp.dot(axisBuf);
             if (dot < minA) minA = dot;
             if (dot > maxA) maxA = dot;
         }
@@ -81,7 +83,8 @@ export class CollisionDetector {
         let minB = Infinity;
         let maxB = -Infinity;
         for (let i = 0; i < vertsB.length; i++) {
-            const dot = tmp.assign(vertsB[i]).dot(axisBuf);
+            tmp.assign(vertsB[i])
+            const dot = tmp.dot(axisBuf);
             if (dot < minB) minB = dot;
             if (dot > maxB) maxB = dot;
         }

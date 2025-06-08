@@ -8,10 +8,6 @@ export class Matrix3 {
         this.values = values || [1, 0, 0, 0, 1, 0, 0, 0, 1];
     }
 
-    static identity() {
-        return new Matrix3();
-    }
-
     static translation(tx: number, ty: number) {
         return new Matrix3([1, 0, tx, 0, 1, ty, 0, 0, 1]);
     }

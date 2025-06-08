@@ -4,22 +4,32 @@ import { BoxCollisionBody } from '../BoxCollisionBody';
 import { CollisionBody } from '../CollisionBody';
 import { Vec2DLegacy } from '../../vec/Vec2DLegacy';
 import { Vec2D } from '../../vec/Vec2D';
+import { Context } from '../../Context';
 
 describe('CollisionDetector', () => {
+    let fakeContext: Context;
+
+    beforeEach(() => {
+        jest.clearAllMocks();
+        fakeContext = new Context();
+    });
+
     it('ignores collisions between static bodies', () => {
-        const detector = new CollisionDetector();
+        const detector = new CollisionDetector(fakeContext);
         detector.addBody(
             new BoxCollisionBody(
-                new Vec2D().set(0, 0),
-                new Vec2D().set(1, 1),
+                fakeContext,
+                Vec2D.set(new Vec2D(), 0, 0),
+                Vec2D.set(new Vec2D(), 1, 1),
                 0,
                 'static'
             )
         );
         detector.addBody(
             new BoxCollisionBody(
-                new Vec2D().set(0.5, 0),
-                new Vec2D().set(1, 1),
+                fakeContext,
+                Vec2D.set(new Vec2D(), 0.5, 0),
+                Vec2D.set(new Vec2D(), 1, 1),
                 0,
                 'static'
             )
@@ -29,16 +39,18 @@ describe('CollisionDetector', () => {
     });
 
     it('detects overlap accounting for rotation', () => {
-        const detector = new CollisionDetector();
+        const detector = new CollisionDetector(fakeContext);
         const dynamic = new BoxCollisionBody(
-            new Vec2D().set(0, 0),
-            new Vec2D().set(2, 1),
+            fakeContext,
+            Vec2D.set(new Vec2D(), 0, 0),
+            Vec2D.set(new Vec2D(), 2, 1),
             Math.PI / 4,
             'dynamic'
         );
         const block = new BoxCollisionBody(
-            new Vec2D().set(0.25, 0.75),
-            new Vec2D().set(1, 1),
+            fakeContext,
+            Vec2D.set(new Vec2D(), 0.25, 0.75),
+            Vec2D.set(new Vec2D(), 1, 1),
             0,
             'static'
         );
@@ -49,14 +61,16 @@ describe('CollisionDetector', () => {
     });
 
     it('detects dynamic to dynamic collisions only once', () => {
-        const detector = new CollisionDetector();
+        const detector = new CollisionDetector(fakeContext);
         const d1 = new BoxCollisionBody(
-            new Vec2D().set(0, 0),
-            new Vec2D().set(1, 1)
+            fakeContext,
+            Vec2D.set(new Vec2D(), 0, 0),
+            Vec2D.set(new Vec2D(), 1, 1)
         );
         const d2 = new BoxCollisionBody(
-            new Vec2D().set(0.5, 0),
-            new Vec2D().set(1, 1)
+            fakeContext,
+            Vec2D.set(new Vec2D(), 0.5, 0),
+            Vec2D.set(new Vec2D(), 1, 1)
         );
         detector.addBody(d1);
         detector.addBody(d2);
@@ -65,14 +79,16 @@ describe('CollisionDetector', () => {
     });
 
     it('can remove bodies', () => {
-        const detector = new CollisionDetector();
+        const detector = new CollisionDetector(fakeContext);
         const d1 = new BoxCollisionBody(
-            new Vec2D().set(0, 0),
-            new Vec2D().set(1, 1)
+            fakeContext,
+            Vec2D.set(new Vec2D(), 0, 0),
+            Vec2D.set(new Vec2D(), 1, 1)
         );
         const d2 = new BoxCollisionBody(
-            new Vec2D().set(0.5, 0),
-            new Vec2D().set(1, 1)
+            fakeContext,
+            Vec2D.set(new Vec2D(), 0.5, 0),
+            Vec2D.set(new Vec2D(), 1, 1)
         );
         detector.addBody(d1);
         detector.addBody(d2);
@@ -82,15 +98,16 @@ describe('CollisionDetector', () => {
     });
 
     it('detects collisions for regular polygons', () => {
-        const detector = new CollisionDetector();
+        const detector = new CollisionDetector(fakeContext);
         const poly = new RegularPolygonCollisionBody(
-            new Vec2D().set(0, 0),
+            Vec2D.set(new Vec2D(), 0, 0),
             1,
             10
         );
         const box = new BoxCollisionBody(
-            new Vec2D().set(0.5, 0),
-            new Vec2D().set(1, 1)
+            fakeContext,
+            Vec2D.set(new Vec2D(), 0.5, 0),
+            Vec2D.set(new Vec2D(), 1, 1)
         );
         detector.addBody(poly);
         detector.addBody(box);

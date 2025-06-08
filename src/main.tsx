@@ -25,8 +25,8 @@ function createRoadBlocks(context: Context) {
             roadBlocks.push(
                 new Block(
                     context,
-                    new Vec2D().set(x * 7, y * 7 + 5),
-                    new Vec2D().set(0.5, 0.5),
+                    Vec2D.set(new Vec2D(), x * 7, y * 7 + 5),
+                    Vec2D.set(new Vec2D(), 0.5, 0.5),
                     0,
                     color
                 )
@@ -83,9 +83,9 @@ function main() {
     const roadBlocks = createRoadBlocks(context);
     const colliderToBlock = new Map<CollisionBody, Block>();
     const grid = new Grid(context, 1, '#ddd');
-    const car = new Car(context, new Vec2D().set(0, 0), fromDeg(90));
+    const car = new Car(context, Vec2D.set(new Vec2D(), 0, 0), fromDeg(90));
     const terrorist = new Terrorist(
-        new Vec2D().set(10, 10),
+        Vec2D.set(new Vec2D(), 10, 10),
         fromDeg(90),
         colliderToBlock
     );
