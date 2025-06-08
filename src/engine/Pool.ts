@@ -10,7 +10,7 @@ export class Pool<T> {
         this.reset = reset;
     }
 
-    acquire(): T {
+    #acquire(): T {
         this._inUse++;
         if (this.pool.length > 0) {
             return this.pool.pop()!;
@@ -19,22 +19,25 @@ export class Pool<T> {
         return this.factory();
     }
 
-    release(obj: T) {
+    #release(obj: T) {
         this._inUse--;
         this.reset?.(obj);
         this.pool.push(obj);
     }
 
+    // TODO: do not allocate stack
     borrow<R>(fn: (acquire: () => T) => R): R {
-        // no tracking array, user responsible for release scope
         const stack: T[] = [];
-        const result = fn(() => {
-            const obj = this.acquire();
-            stack.push(obj);
-            return obj;
-        });
-        for (const obj of stack) this.release(obj);
-        return result;
+        try {
+            const result = fn(() => {
+                const obj = this.#acquire();
+                stack.push(obj);
+                return obj;
+            });
+            return result;
+        } finally {
+            for (const obj of this.pool) this.#release(obj);
+        }
     }
 
     get stats() {

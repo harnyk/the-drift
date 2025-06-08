@@ -1,6 +1,5 @@
 import { FixedTimestepIntegrator } from './engine/FixedTimestepIntegrator';
 import { Grid } from './engine/Grid';
-import { Vec2DLegacy } from './engine/vec/Vec2DLegacy';
 import { Viewport } from './engine/Viewport';
 import { World } from './engine/World';
 import { WorldRenderer } from './engine/WorldRenderer';
@@ -57,9 +56,6 @@ function setupKeyboardControl(
 
 function main() {
     const context = new Context();
-    setInterval(() => {
-        console.log(context.vectorPool.stats);
-    }, 1000);
 
     const canvas: HTMLCanvasElement = document.querySelector('canvas#canvas')!;
     canvas.width = document.body.clientWidth;
@@ -68,9 +64,9 @@ function main() {
 
     const viewport = new Viewport(
         context,
-        new Vec2DLegacy(0, 0),
+        Vec2D.set(new Vec2D(), 0, 0),
         50,
-        new Vec2DLegacy(canvas.width, canvas.height)
+        Vec2D.set(new Vec2D(), canvas.width, canvas.height)
     );
 
     const renderer = new WorldRenderer(context, canvasContext, viewport);
@@ -116,11 +112,15 @@ function main() {
         });
 
         viewport.rotation = fromDeg(90) - car.body.angle;
-        viewport.center = viewport.screenToWorldPoint(
-            viewport
-                .worldToScreenPoint(car.body.position.toLegacy())
-                .sub(new Vec2DLegacy(0, canvas.height * 0.25))
-        );
+
+        context.vectorPool.borrow((acquire) => {
+            const tmp = acquire();
+            tmp.assign(car.body.position);
+            viewport.worldToScreenPoint(tmp);
+            tmp.set(tmp.x, tmp.y - canvas.height * 0.25);
+            viewport.screenToWorldPoint(tmp);
+            viewport.center.assign(tmp);
+        });
 
         const collisions = collisionDetector
             .detect()

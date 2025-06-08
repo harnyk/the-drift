@@ -47,7 +47,7 @@ export class Terrorist {
                 center.sub(this.body.position)
                 center.normalize()
                 center.scale(50);
-                this.body.applyForce(center.toLegacy());
+                this.body.applyForce(center);
             }
             this.timeAccumulator = 0;
         }

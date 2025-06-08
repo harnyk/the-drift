@@ -1,18 +1,9 @@
 import { IVec2D } from './IVec2D';
-import { Vec2DLegacy } from './Vec2DLegacy';
 
 export interface ImmutableVec2D {
     readonly x: number;
     readonly y: number;
     readonly isVec2D: true;
-    /**
-     * @deprecated do not use Vec2DLegacy
-     */
-    toLegacy(): Vec2DLegacy;
-    /**
-     * @deprecated do not clone
-     */
-    clone(): Vec2D;
     length: number;
     angle: number;
 }
@@ -45,22 +36,6 @@ export class Vec2D {
     assignPolar(length: number, angleRad: number) {
         this.x = Math.cos(angleRad) * length;
         this.y = Math.sin(angleRad) * length;
-    }
-
-    /**
-     * @deprecated do not clone
-     */
-    clone() {
-        const v = new Vec2D();
-        v.assign(this);
-        return v;
-    }
-
-    /**
-     * @deprecated do not use Vec2DLegacy
-     */
-    toLegacy() {
-        return new Vec2DLegacy(this.x, this.y);
     }
 
     zero() {

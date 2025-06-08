@@ -1,8 +1,6 @@
 import { CollisionDetector } from '../CollisionDetector';
 import { RegularPolygonCollisionBody } from '../RegularPolygonCollisionBody';
 import { BoxCollisionBody } from '../BoxCollisionBody';
-import { CollisionBody } from '../CollisionBody';
-import { Vec2DLegacy } from '../../vec/Vec2DLegacy';
 import { Vec2D } from '../../vec/Vec2D';
 import { Context } from '../../Context';
 

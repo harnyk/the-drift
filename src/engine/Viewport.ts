@@ -1,7 +1,6 @@
 import { Context } from './Context';
-import { Matrix3Legacy } from './Matrix3Legacy';
+import { Matrix3 } from './Matrix3';
 import { ImmutableVec2D, Vec2D } from './vec/Vec2D';
-import { Vec2DLegacy } from './vec/Vec2DLegacy';
 
 interface Bounds {
     minX: number;
@@ -11,48 +10,65 @@ interface Bounds {
 }
 
 export class Viewport {
-    center: Vec2DLegacy; // координаты центра камеры в мире (обычно позиция машинки)
-    zoom: number; // масштаб: сколько пикселей на одну единицу мира
-    canvasSize: Vec2DLegacy; // размер канваса в пикселях
-    rotation: number; // угол поворота камеры в радианах
+    readonly center = new Vec2D(); // coordinate of center of camera in world
+    zoom: number; // scale: how many pixels per world unit
+    readonly canvasSize = new Vec2D(); // size of canvas in pixels
+    rotation: number; // angle of camera rotation in radians
+
+    #worldToScreen = new Matrix3();
+    readonly #screenToWorld = new Matrix3();
 
     constructor(
         private readonly context: Context,
-        center: Vec2DLegacy,
+        center: ImmutableVec2D,
         zoom: number,
-        canvasSize: Vec2DLegacy,
+        canvasSize: ImmutableVec2D,
         rotation = 0
     ) {
-        this.center = center;
+        this.center.assign(center);
         this.zoom = zoom;
-        this.canvasSize = canvasSize;
+        this.canvasSize.assign(canvasSize);
         this.rotation = rotation;
     }
 
-    get worldToScreen(): Matrix3Legacy {
+    get worldToScreen(): Matrix3 {
         const { x: cx, y: cy } = this.center;
         const { x: w, y: h } = this.canvasSize;
 
-        return Matrix3Legacy.translation(w / 2, h / 2) // перенос начала координат в центр экрана
-            .multiply(Matrix3Legacy.rotation(-this.rotation)) // инвертируем поворот, потому что мы вращаем мир, а не камеру
-            .multiply(Matrix3Legacy.scale(this.zoom, -this.zoom)) // масштаб и инвертирование оси Y (в канвасе Y вниз)
-            .multiply(Matrix3Legacy.translation(-cx, -cy)); // сдвигаем так, чтобы камера смотрела в центр
+        this.context.matrixPool.borrow((acquire) => {
+            // translate zero point to center of screen
+            this.#screenToWorld.setTranslation(w / 2, h / 2);
+
+            // invert rotation, because we rotate world, not camera
+            const step = acquire();
+            step.setRotation(-this.rotation);
+            this.#screenToWorld.multiply(step);
+
+            // scale and invert Y axis (in canvas Y goes down)
+            step.setScale(this.zoom, -this.zoom);
+            this.#screenToWorld.multiply(step);
+
+            // translate camera to center of screen
+            step.setTranslation(-cx, -cy);
+            this.#screenToWorld.multiply(step);
+        });
+
+        return this.#screenToWorld;
     }
 
-    get screenToWorld(): Matrix3Legacy {
-        return this.worldToScreen.invert();
+    get screenToWorld(): Matrix3 {
+        this.#worldToScreen.assign(this.worldToScreen);
+        this.#worldToScreen.invertInPlace();
+
+        return this.#worldToScreen;
     }
 
-    worldToScreenPoint(p: ImmutableVec2D | Vec2DLegacy): Vec2DLegacy {
-        return this.worldToScreen.transformPoint(
-            'isLegacy' in p ? p : p.toLegacy()
-        );
+    worldToScreenPoint(p: Vec2D): void {
+        this.worldToScreen.transformPointInPlace(p);
     }
 
-    screenToWorldPoint(p: ImmutableVec2D | Vec2DLegacy): Vec2DLegacy {
-        return this.screenToWorld.transformPoint(
-            'isLegacy' in p ? p : p.toLegacy()
-        );
+    screenToWorldPoint(p: Vec2D): void {
+        this.screenToWorld.transformPointInPlace(p);
     }
 
     readonly #worldBounds: Bounds = { minX: 0, maxX: 0, minY: 0, maxY: 0 };
@@ -62,16 +78,21 @@ export class Viewport {
         const size = this.canvasSize;
 
         this.context.vectorPool.borrow((acquire) => {
-            const corner0 = this.screenToWorldPoint(Vec2D.set(acquire(), 0, 0));
-            const corner1 = this.screenToWorldPoint(
-                Vec2D.set(acquire(), size.x, 0)
-            );
-            const corner2 = this.screenToWorldPoint(
-                Vec2D.set(acquire(), size.x, size.y)
-            );
-            const corner3 = this.screenToWorldPoint(
-                Vec2D.set(acquire(), 0, size.y)
-            );
+            const corner0 = acquire();
+            corner0.set(0, 0);
+            this.screenToWorldPoint(corner0);
+
+            const corner1 = acquire();
+            corner1.set(size.x, 0);
+            this.screenToWorldPoint(corner1);
+
+            const corner2 = acquire();
+            corner2.set(size.x, size.y);
+            this.screenToWorldPoint(corner2);
+
+            const corner3 = acquire();
+            corner3.set(0, size.y);
+            this.screenToWorldPoint(corner3);
 
             this.#worldBounds.minX = Math.min(
                 corner0.x,

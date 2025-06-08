@@ -1,5 +1,5 @@
 import { IVec2D } from '../vec/IVec2D';
-import { Vec2D } from '../vec/Vec2D';
+import { ImmutableVec2D, Vec2D } from '../vec/Vec2D';
 
 export class RigidBody2D {
     readonly position = new Vec2D();
@@ -25,7 +25,7 @@ export class RigidBody2D {
         this.momentOfInertia = momentOfInertia;
     }
 
-    applyForce(force: IVec2D) {
+    applyForce(force: ImmutableVec2D) {
         this.force.add(force);
     }
 

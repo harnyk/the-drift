@@ -1,7 +1,6 @@
 import { Renderable } from '../engine/Renderable';
 import { Viewport } from '../engine/Viewport';
 import { Context } from './Context';
-import { Vec2DLegacy } from './vec/Vec2DLegacy';
 
 export class Grid implements Renderable {
     spacing: number;
