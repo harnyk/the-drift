@@ -1,4 +1,4 @@
-import { Matrix3 } from "./Matrix3";
+import { Matrix3Legacy } from "./Matrix3";
 import { Vec2DLegacy } from "./vec/Vec2DLegacy";
 
 
@@ -17,10 +17,10 @@ export class Transform {
         this.scale = scale;
     }
 
-    get matrix(): Matrix3 {
-        return Matrix3.translation(this.position.x, this.position.y)
-            .multiply(Matrix3.rotation(this.rotation))
-            .multiply(Matrix3.scale(this.scale.x, this.scale.y));
+    get matrix(): Matrix3Legacy {
+        return Matrix3Legacy.translation(this.position.x, this.position.y)
+            .multiply(Matrix3Legacy.rotation(this.rotation))
+            .multiply(Matrix3Legacy.scale(this.scale.x, this.scale.y));
     }
 
     applyToPoint(p: Vec2DLegacy): Vec2DLegacy {

@@ -1,7 +1,7 @@
 import { Vec2DLegacy } from "./vec/Vec2DLegacy";
 
 
-export class Matrix3 {
+export class Matrix3Legacy {
     values: number[];
 
     constructor(values?: number[]) {
@@ -9,20 +9,20 @@ export class Matrix3 {
     }
 
     static translation(tx: number, ty: number) {
-        return new Matrix3([1, 0, tx, 0, 1, ty, 0, 0, 1]);
+        return new Matrix3Legacy([1, 0, tx, 0, 1, ty, 0, 0, 1]);
     }
 
     static rotation(angleRad: number) {
         const c = Math.cos(angleRad);
         const s = Math.sin(angleRad);
-        return new Matrix3([c, -s, 0, s, c, 0, 0, 0, 1]);
+        return new Matrix3Legacy([c, -s, 0, s, c, 0, 0, 0, 1]);
     }
 
     static scale(sx: number, sy: number) {
-        return new Matrix3([sx, 0, 0, 0, sy, 0, 0, 0, 1]);
+        return new Matrix3Legacy([sx, 0, 0, 0, sy, 0, 0, 0, 1]);
     }
 
-    multiply(other: Matrix3): Matrix3 {
+    multiply(other: Matrix3Legacy): Matrix3Legacy {
         const a = this.values;
         const b = other.values;
         const r = new Array(9).fill(0);
@@ -36,7 +36,7 @@ export class Matrix3 {
             }
         }
 
-        return new Matrix3(r);
+        return new Matrix3Legacy(r);
     }
 
     transformPoint(p: Vec2DLegacy): Vec2DLegacy {
@@ -47,7 +47,7 @@ export class Matrix3 {
         return new Vec2DLegacy(newX, newY);
     }
 
-    invert(): Matrix3 {
+    invert(): Matrix3Legacy {
         const m = this.values;
         const [a, b, c, d, e, f, g, h, i] = m;
 
@@ -71,6 +71,6 @@ export class Matrix3 {
             (a * e - b * d) / det,
         ];
 
-        return new Matrix3(inv);
+        return new Matrix3Legacy(inv);
     }
 }

@@ -1,5 +1,5 @@
 import { Context } from './Context';
-import { Matrix3 } from './Matrix3';
+import { Matrix3Legacy } from './Matrix3';
 import { ImmutableVec2D, Vec2D } from './vec/Vec2D';
 import { Vec2DLegacy } from './vec/Vec2DLegacy';
 
@@ -29,17 +29,17 @@ export class Viewport {
         this.rotation = rotation;
     }
 
-    get worldToScreen(): Matrix3 {
+    get worldToScreen(): Matrix3Legacy {
         const { x: cx, y: cy } = this.center;
         const { x: w, y: h } = this.canvasSize;
 
-        return Matrix3.translation(w / 2, h / 2) // перенос начала координат в центр экрана
-            .multiply(Matrix3.rotation(-this.rotation)) // инвертируем поворот, потому что мы вращаем мир, а не камеру
-            .multiply(Matrix3.scale(this.zoom, -this.zoom)) // масштаб и инвертирование оси Y (в канвасе Y вниз)
-            .multiply(Matrix3.translation(-cx, -cy)); // сдвигаем так, чтобы камера смотрела в центр
+        return Matrix3Legacy.translation(w / 2, h / 2) // перенос начала координат в центр экрана
+            .multiply(Matrix3Legacy.rotation(-this.rotation)) // инвертируем поворот, потому что мы вращаем мир, а не камеру
+            .multiply(Matrix3Legacy.scale(this.zoom, -this.zoom)) // масштаб и инвертирование оси Y (в канвасе Y вниз)
+            .multiply(Matrix3Legacy.translation(-cx, -cy)); // сдвигаем так, чтобы камера смотрела в центр
     }
 
-    get screenToWorld(): Matrix3 {
+    get screenToWorld(): Matrix3Legacy {
         return this.worldToScreen.invert();
     }
 
