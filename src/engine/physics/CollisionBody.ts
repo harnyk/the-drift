@@ -1,6 +1,6 @@
 import { IVec2D } from '../vec/IVec2D';
 import { ImmutableVec2D, Vec2D } from '../vec/Vec2D';
-import { BodyType } from './CollisionDetector';
+import { BodyType } from './BodyType';
 
 export abstract class CollisionBody {
     readonly position = new Vec2D();

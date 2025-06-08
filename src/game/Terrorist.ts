@@ -1,22 +1,23 @@
 import { Context } from '../engine/Context';
-import { CollisionBody } from '../engine/physics/CollisionBody';
 import { RegularPolygonCollisionBody } from '../engine/physics/RegularPolygonCollisionBody';
 import { RigidBody2D } from '../engine/physics/RigidBody2D';
 import { Vec2D } from '../engine/vec/Vec2D';
-import { Block } from './Block';
+import { Vec2DAverager } from '../engine/Vec2DAverager';
 import { RegularPolygonRenderable } from './renderables/RegularPolygonRenderable';
 
 export class Terrorist {
     readonly renderable: RegularPolygonRenderable;
     readonly collider: RegularPolygonCollisionBody;
     readonly body: RigidBody2D;
-    private timeAccumulator: number = 0;
+
+    readonly #sum = new Vec2D();
+    #timeAccumulator: number = 0;
 
     constructor(
         private readonly context: Context,
         position: Vec2D,
         angle = 0,
-        public readonly colliderToBlock: Map<CollisionBody, Block>
+        private readonly averageTarget: Vec2DAverager
     ) {
         const radius = 3;
         const sides = 5;
@@ -43,16 +44,15 @@ export class Terrorist {
     }
 
     update(dt: number) {
-        this.timeAccumulator += dt;
-        if (this.timeAccumulator >= 1) {
-            if (this.colliderToBlock.size > 0) {
-                const center = this.#getAveragePositionOfAllBlocks();
-                center.sub(this.body.position);
-                center.normalize();
-                center.scale(50);
-                this.body.applyForce(center);
+        this.#timeAccumulator += dt;
+        if (this.#timeAccumulator >= 1) {
+            if (this.averageTarget.computeAverage(this.#sum)) {
+                this.#sum.sub(this.body.position);
+                this.#sum.normalize();
+                this.#sum.scale(50);
+                this.body.applyForce(this.#sum);
             }
-            this.timeAccumulator = 0;
+            this.#timeAccumulator = 0;
         }
 
         this.renderable.position.assign(this.body.position);
@@ -60,17 +60,5 @@ export class Terrorist {
         this.collider.position.assign(this.body.position);
         this.collider.angle = this.body.angle;
         this.body.update(dt);
-    }
-
-    readonly #sum = new Vec2D();
-    #getAveragePositionOfAllBlocks() {
-        const sum = this.#sum;
-        sum.zero();
-
-        for (const block of this.colliderToBlock.values()) {
-            sum.add(block.renderable.position);
-        }
-        sum.scale(1 / this.colliderToBlock.size);
-        return sum;
     }
 }

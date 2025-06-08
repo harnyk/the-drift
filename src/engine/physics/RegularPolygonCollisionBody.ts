@@ -1,7 +1,7 @@
 import { Context } from '../Context';
 import { Vec2D } from '../vec/Vec2D';
+import { BodyType } from './BodyType';
 import { CollisionBody } from './CollisionBody';
-import { BodyType } from './CollisionDetector';
 
 export class RegularPolygonCollisionBody extends CollisionBody {
     private radius: number;
