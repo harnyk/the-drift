@@ -110,7 +110,9 @@ export class Game {
                         if (block.isGood) {
                             this.world.remove(block.renderable);
                             this.collisionDetector.removeBody(body);
-                            this.terroristGravityCenterAverager.remove(body.position);
+                            this.terroristGravityCenterAverager.remove(
+                                body.position
+                            );
                         } else {
                             this.car.body.angularVelocity = 10;
                             this.car.body.velocity.normalize();
@@ -122,6 +124,27 @@ export class Game {
                 },
             });
         }
+    }
+
+    private applyMutualGravity() {
+        this.context.vectorPool.borrow((acquire) => {
+            const dir = acquire();
+            dir.assign(this.terrorist.body.position);
+            dir.sub(this.car.body.position);
+
+            const r = Math.max(dir.length, 2);
+            dir.normalize();
+
+            const G = 30;
+            const forceMagnitude =
+                (G * this.car.body.mass * this.terrorist.body.mass) / (r * r);
+            dir.scale(forceMagnitude);
+
+            this.car.body.applyForce(dir);
+
+            dir.scale(-1);
+            this.terrorist.body.applyForce(dir);
+        });
     }
 
     private initCarAndTerrorist() {
@@ -175,6 +198,7 @@ export class Game {
     public start() {
         const loop = () => {
             this.integrator.update((dt) => {
+                this.applyMutualGravity();
                 this.car.update(dt);
                 this.terrorist.update(dt);
             });

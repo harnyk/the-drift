@@ -39,7 +39,7 @@ export class Terrorist {
             'dynamic'
         );
 
-        this.body = new RigidBody2D(position, angle, 1, 0.1);
+        this.body = new RigidBody2D(position, angle, 5, 0.1);
         this.body.applyTorque(1);
     }
 
