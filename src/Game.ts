@@ -13,6 +13,7 @@ import { Car } from './game/Car';
 import { KeyboardControl, KeyCodeWASD } from './game/controls/KeyboardControl';
 import { GameStateManager } from './game/GameStateManager';
 import { CompassRenderable } from './game/renderables/CompassRenderable';
+import { CurvedGrid } from './game/renderables/CurvedGrid';
 import { GameStateOverlayRenderable } from './game/renderables/GameStateOverlayRenderable';
 import { SpeedometerRenderable } from './game/renderables/SpeedometerRenderable';
 import { TerroristIndicatorRenderable } from './game/renderables/TerroristIndicatorRenderable';
@@ -70,7 +71,6 @@ export class Game {
     }
 
     private createRoadBlocks(): Block[] {
-
         const distanceBetweenBlocks = 6;
         const vertNumberOfBlocks = 5;
         const horNumberOfBlocks = 5;
@@ -81,7 +81,11 @@ export class Game {
                 blocks.push(
                     new Block(
                         this.context,
-                        Vec2D.set(new Vec2D(), x * distanceBetweenBlocks, y * distanceBetweenBlocks + 5),
+                        Vec2D.set(
+                            new Vec2D(),
+                            x * distanceBetweenBlocks,
+                            y * distanceBetweenBlocks + 5
+                        ),
                         Vec2D.set(new Vec2D(), 0.5, 0.5),
                         0,
                         true,
@@ -95,11 +99,13 @@ export class Game {
     }
 
     private initGameObjects() {
-        this.world.add(new Grid(this.context, 1, '#ddd'));
+        // this.world.add(new Grid(this.context, 1, '#ddd'));
+
         const roadBlocks = this.createRoadBlocks();
 
         this.initCollisionDetector(roadBlocks);
         this.initCarAndTerrorist();
+
         this.addRenderables(roadBlocks);
         this.setupControls();
     }
@@ -182,6 +188,10 @@ export class Game {
     }
 
     private addRenderables(blocks: Block[]) {
+        const grid = new CurvedGrid(this.context, 1, '#ddd');
+        grid.setGravityWell(this.terrorist.body.position);
+        this.world.add(grid);
+
         this.world.add(this.car.renderable);
         this.world.add(this.terrorist.renderable);
         this.world.add(new CompassRenderable());
@@ -218,6 +228,7 @@ export class Game {
                 if (!this.gameState.isPlaying()) return;
 
                 this.applyMutualGravity();
+
                 this.car.update(dt);
                 this.terrorist.update(dt);
                 this.checkVictoryOrDefeat();
