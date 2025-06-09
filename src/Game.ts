@@ -11,7 +11,9 @@ import { WorldRenderer } from './engine/WorldRenderer';
 import { Block } from './game/Block';
 import { Car } from './game/Car';
 import { KeyboardControl, KeyCodeWASD } from './game/controls/KeyboardControl';
+import { GameStateManager } from './game/GameStateManager';
 import { CompassRenderable } from './game/renderables/CompassRenderable';
+import { GameStateOverlayRenderable } from './game/renderables/GameStateOverlayRenderable';
 import { SpeedometerRenderable } from './game/renderables/SpeedometerRenderable';
 import { TerroristIndicatorRenderable } from './game/renderables/TerroristIndicatorRenderable';
 import { Terrorist } from './game/Terrorist';
@@ -25,7 +27,7 @@ export class Game {
     private integrator = new FixedTimestepIntegrator(60);
     private controller: KeyboardControl;
     private terroristGravityCenterAverager = new Vec2DAverager();
-
+    private gameState = new GameStateManager();
     private car!: Car;
     private terrorist!: Terrorist;
     private collisionDetector!: CollisionDetector;
@@ -68,13 +70,18 @@ export class Game {
     }
 
     private createRoadBlocks(): Block[] {
+
+        const distanceBetweenBlocks = 6;
+        const vertNumberOfBlocks = 5;
+        const horNumberOfBlocks = 5;
+
         const blocks: Block[] = [];
-        for (let x = 0; x < 4; x++) {
-            for (let y = 0; y < 4; y++) {
+        for (let x = 0; x < horNumberOfBlocks; x++) {
+            for (let y = 0; y < vertNumberOfBlocks; y++) {
                 blocks.push(
                     new Block(
                         this.context,
-                        Vec2D.set(new Vec2D(), x * 5, y * 5 + 5),
+                        Vec2D.set(new Vec2D(), x * distanceBetweenBlocks, y * distanceBetweenBlocks + 5),
                         Vec2D.set(new Vec2D(), 0.5, 0.5),
                         0,
                         true,
@@ -161,7 +168,16 @@ export class Game {
             this.terroristGravityCenterAverager
         );
 
-        this.collisionDetector.addBody(this.car.collider);
+        this.collisionDetector.addBody(this.car.collider, {
+            onCollisionStart: (body, other) => {
+                if (
+                    other === this.terrorist.collider &&
+                    this.gameState.isPlaying()
+                ) {
+                    this.gameState.lose();
+                }
+            },
+        });
         this.collisionDetector.addBody(this.terrorist.collider);
     }
 
@@ -177,6 +193,7 @@ export class Game {
                 this.terrorist.body
             )
         );
+        this.world.add(new GameStateOverlayRenderable(this.gameState));
     }
 
     private setupControls() {
@@ -198,9 +215,12 @@ export class Game {
     public start() {
         const loop = () => {
             this.integrator.update((dt) => {
+                if (!this.gameState.isPlaying()) return;
+
                 this.applyMutualGravity();
                 this.car.update(dt);
                 this.terrorist.update(dt);
+                this.checkVictoryOrDefeat();
             });
 
             this.updateCamera();
@@ -211,6 +231,13 @@ export class Game {
         };
 
         loop();
+    }
+
+    private checkVictoryOrDefeat() {
+        if (this.terroristGravityCenterAverager.count === 0) {
+            this.gameState.win();
+            return;
+        }
     }
 
     private updateCamera() {
