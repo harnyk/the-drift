@@ -6,6 +6,14 @@ import { Vec2DAverager } from '../engine/Vec2DAverager';
 import { RegularPolygonRenderable } from './renderables/RegularPolygonRenderable';
 
 export class Terrorist {
+    private static readonly RADIUS = 3;
+    private static readonly SIDES = 5;
+    private static readonly MASS = 5;
+    private static readonly MOMENT_OF_INERTIA = 0.1;
+    private static readonly INITIAL_TORQUE = 1;
+    private static readonly UPDATE_INTERVAL = 0.5;
+    private static readonly FORCE_MAGNITUDE = 100;
+
     readonly renderable: RegularPolygonRenderable;
     readonly collider: RegularPolygonCollisionBody;
     readonly body: RigidBody2D;
@@ -19,13 +27,10 @@ export class Terrorist {
         angle = 0,
         private readonly averageTarget: Vec2DAverager
     ) {
-        const radius = 3;
-        const sides = 5;
-
         this.renderable = new RegularPolygonRenderable({
             position,
-            radius,
-            sides,
+            radius: Terrorist.RADIUS,
+            sides: Terrorist.SIDES,
             angle: angle,
             color: '#333',
         });
@@ -33,23 +38,28 @@ export class Terrorist {
         this.collider = new RegularPolygonCollisionBody(
             this.context,
             position,
-            radius,
-            sides,
+            Terrorist.RADIUS,
+            Terrorist.SIDES,
             angle,
             'dynamic'
         );
 
-        this.body = new RigidBody2D(position, angle, 5, 0.1);
-        this.body.applyTorque(1);
+        this.body = new RigidBody2D(
+            position,
+            angle,
+            Terrorist.MASS,
+            Terrorist.MOMENT_OF_INERTIA
+        );
+        this.body.applyTorque(Terrorist.INITIAL_TORQUE);
     }
 
     update(dt: number) {
         this.#timeAccumulator += dt;
-        if (this.#timeAccumulator >= 0.5) {
+        if (this.#timeAccumulator >= Terrorist.UPDATE_INTERVAL) {
             if (this.averageTarget.computeAverage(this.#sum)) {
                 this.#sum.sub(this.body.position);
                 this.#sum.normalize();
-                this.#sum.scale(100);
+                this.#sum.scale(Terrorist.FORCE_MAGNITUDE);
                 this.body.applyForce(this.#sum);
             }
             this.#timeAccumulator = 0;

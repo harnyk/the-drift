@@ -70,7 +70,7 @@ export class Game {
         return controller;
     }
 
-    private createRoadBlocks(): Block[] {
+    private createBlocks(): Block[] {
         const distanceBetweenBlocks = 6;
         const vertNumberOfBlocks = 5;
         const horNumberOfBlocks = 5;
@@ -99,14 +99,12 @@ export class Game {
     }
 
     private initGameObjects() {
-        // this.world.add(new Grid(this.context, 1, '#ddd'));
-
-        const roadBlocks = this.createRoadBlocks();
+        const roadBlocks = this.createBlocks();
 
         this.initCollisionDetector(roadBlocks);
         this.initCarAndTerrorist();
-
         this.addRenderables(roadBlocks);
+
         this.setupControls();
     }
 
@@ -114,7 +112,6 @@ export class Game {
         this.collisionDetector = new CollisionDetector(this.context);
 
         for (const block of roadBlocks) {
-            this.world.add(block.renderable);
             this.terroristGravityCenterAverager.add(block.collider.position);
 
             this.collisionDetector.addBody(block.collider, {
@@ -191,6 +188,8 @@ export class Game {
         const grid = new CurvedGrid(this.context, 1, '#ddd');
         grid.setGravityWell(this.terrorist.body.position);
         this.world.add(grid);
+
+        this.world.addMany(blocks.map((b) => b.renderable));
 
         this.world.add(this.car.renderable);
         this.world.add(this.terrorist.renderable);
