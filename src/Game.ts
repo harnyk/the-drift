@@ -4,7 +4,6 @@ import { fromDeg } from './engine/fromDeg';
 import { Grid } from './engine/Grid';
 import { CollisionDetector } from './engine/physics/CollisionDetector';
 import { Vec2D } from './engine/vec/Vec2D';
-import { Vec2DAverager } from './engine/Vec2DAverager';
 import { Viewport } from './engine/Viewport';
 import { World } from './engine/World';
 import { WorldRenderer } from './engine/WorldRenderer';
@@ -24,7 +23,7 @@ export class Game {
     private world = new World(this.context);
     private integrator = new FixedTimestepIntegrator(60);
     private controller: KeyboardControl;
-    private terroristGravityCenterAverager = new Vec2DAverager();
+    private terroristGravitySources: Vec2D[] = [];
 
     private car!: Car;
     private terrorist!: Terrorist;
@@ -102,7 +101,7 @@ export class Game {
 
         for (const block of roadBlocks) {
             this.world.add(block.renderable);
-            this.terroristGravityCenterAverager.add(block.collider.position);
+            this.terroristGravitySources.push(block.collider.position);
 
             this.collisionDetector.addBody(block.collider, {
                 onCollisionStart: (body, other) => {
@@ -110,7 +109,8 @@ export class Game {
                         if (block.isGood) {
                             this.world.remove(block.renderable);
                             this.collisionDetector.removeBody(body);
-                            this.terroristGravityCenterAverager.remove(body.position);
+                            const i = this.terroristGravitySources.indexOf(body.position);
+                            if (i !== -1) this.terroristGravitySources.splice(i, 1);
                         } else {
                             this.car.body.angularVelocity = 10;
                             this.car.body.velocity.normalize();
@@ -135,7 +135,7 @@ export class Game {
             this.context,
             Vec2D.set(new Vec2D(), 10, 10),
             fromDeg(90),
-            this.terroristGravityCenterAverager
+            this.terroristGravitySources
         );
 
         this.collisionDetector.addBody(this.car.collider);

@@ -2,7 +2,6 @@ import { Context } from '../engine/Context';
 import { RegularPolygonCollisionBody } from '../engine/physics/RegularPolygonCollisionBody';
 import { RigidBody2D } from '../engine/physics/RigidBody2D';
 import { Vec2D } from '../engine/vec/Vec2D';
-import { Vec2DAverager } from '../engine/Vec2DAverager';
 import { RegularPolygonRenderable } from './renderables/RegularPolygonRenderable';
 
 export class Terrorist {
@@ -11,13 +10,13 @@ export class Terrorist {
     readonly body: RigidBody2D;
 
     readonly #sum = new Vec2D();
-    #timeAccumulator: number = 0;
+    gravityConstant = 100;
 
     constructor(
         private readonly context: Context,
         position: Vec2D,
         angle = 0,
-        private readonly averageTarget: Vec2DAverager
+        private readonly gravitySources: Vec2D[]
     ) {
         const radius = 3;
         const sides = 5;
@@ -44,16 +43,18 @@ export class Terrorist {
     }
 
     update(dt: number) {
-        this.#timeAccumulator += dt;
-        if (this.#timeAccumulator >= 0.5) {
-            if (this.averageTarget.computeAverage(this.#sum)) {
-                this.#sum.sub(this.body.position);
-                this.#sum.normalize();
-                this.#sum.scale(100);
-                this.body.applyForce(this.#sum);
-            }
-            this.#timeAccumulator = 0;
+        this.#sum.zero();
+        for (const target of this.gravitySources) {
+            const dx = target.x - this.body.position.x;
+            const dy = target.y - this.body.position.y;
+            const distSq = dx * dx + dy * dy;
+            if (distSq <= 1e-5) continue;
+            const invDist = 1 / Math.sqrt(distSq);
+            const forceMag = this.gravityConstant / distSq;
+            this.#sum.x += dx * invDist * forceMag;
+            this.#sum.y += dy * invDist * forceMag;
         }
+        this.body.applyForce(this.#sum);
 
         this.renderable.position.assign(this.body.position);
         this.renderable.angle = this.body.angle;
