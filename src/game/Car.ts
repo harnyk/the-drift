@@ -34,6 +34,10 @@ export class Car {
         );
     }
 
+    boost(k: number) {
+        this.body.velocity.scale(k);
+    }
+
     update(dt: number) {
         this.renderable.position.assign(this.body.position);
         this.renderable.angle = this.body.angle;

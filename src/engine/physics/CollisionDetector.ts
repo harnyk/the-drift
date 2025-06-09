@@ -52,6 +52,7 @@ export class CollisionDetector {
     }
 
     #populateEntriesCopy() {
+        this.entriesCopy.length = this.entries.length;
         for (let i = 0; i < this.entries.length; i++) {
             this.entriesCopy[i] = this.entries[i];
         }

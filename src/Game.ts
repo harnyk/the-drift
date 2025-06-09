@@ -13,6 +13,7 @@ import { Car } from './game/Car';
 import { KeyboardControl, KeyCodeWASD } from './game/controls/KeyboardControl';
 import { CompassRenderable } from './game/renderables/CompassRenderable';
 import { SpeedometerRenderable } from './game/renderables/SpeedometerRenderable';
+import { TerroristIndicatorRenderable } from './game/renderables/TerroristIndicatorRenderable';
 import { Terrorist } from './game/Terrorist';
 
 export class Game {
@@ -65,13 +66,19 @@ export class Game {
             this.collisionDetector.addBody(block.collider, {
                 onCollisionStart: (body, other) => {
                     if (other === this.car.collider) {
-                        this.world.remove(block.renderable);
-                        this.collisionDetector.removeBody(body);
-                        this.terroristGravityCenterAverager.remove(
-                            body.position
-                        );
+                        if (block.isGood) {
+                            this.world.remove(block.renderable);
+                            this.collisionDetector.removeBody(body);
+                            this.terroristGravityCenterAverager.remove(
+                                body.position
+                            );
+                        } else {
+                            this.car.body.angularVelocity = 10;
+                            this.car.body.velocity.normalize();
+                            this.car.body.velocity.scale(-10);
+                        }
                     } else if (other === this.terrorist.collider) {
-                        block.invertColor();
+                        block.invert();
                     }
                 },
             });
@@ -96,6 +103,13 @@ export class Game {
         this.world.add(this.terrorist.renderable);
         this.world.add(new CompassRenderable());
         this.world.add(new SpeedometerRenderable(this.car.body));
+        this.world.add(
+            new TerroristIndicatorRenderable(
+                this.context,
+                this.car.body,
+                this.terrorist.body
+            )
+        );
 
         this.setupControls();
     }
@@ -107,9 +121,10 @@ export class Game {
                 blocks.push(
                     new Block(
                         this.context,
-                        Vec2D.set(new Vec2D(), x * 7, y * 7 + 5),
+                        Vec2D.set(new Vec2D(), x * 5, y * 5 + 5),
                         Vec2D.set(new Vec2D(), 0.5, 0.5),
                         0,
+                        true,
                         '#0a0',
                         '#a00'
                     )

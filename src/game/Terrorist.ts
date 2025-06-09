@@ -45,11 +45,11 @@ export class Terrorist {
 
     update(dt: number) {
         this.#timeAccumulator += dt;
-        if (this.#timeAccumulator >= 1) {
+        if (this.#timeAccumulator >= 0.5) {
             if (this.averageTarget.computeAverage(this.#sum)) {
                 this.#sum.sub(this.body.position);
                 this.#sum.normalize();
-                this.#sum.scale(50);
+                this.#sum.scale(100);
                 this.body.applyForce(this.#sum);
             }
             this.#timeAccumulator = 0;

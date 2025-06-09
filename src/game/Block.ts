@@ -7,23 +7,30 @@ import { RoadBlockRenderable } from './renderables/RoadBlockRenderable';
 export class Block {
     readonly renderable: RoadBlockRenderable;
     readonly collider: CollisionBody;
-    #color: string;
+    readonly id: number;
+    static #count = 0;
+
+    #getColorFromGoodness() {
+        return this.isGood ? this.goodColor : this.badColor;
+    }
 
     constructor(
         private readonly context: Context,
         public readonly position = new Vec2D(),
         public readonly size = new Vec2D(),
         public angle: number,
+        public isGood: boolean,
         public goodColor: string,
         public badColor: string
     ) {
-        this.#color = this.goodColor;
+        Block.#count++;
+        this.id = Block.#count;
 
         this.renderable = new RoadBlockRenderable(this.context, {
             position: this.position,
             angle: this.angle,
             size: this.size,
-            color: this.#color,
+            color: this.#getColorFromGoodness(),
         });
 
         this.collider = new BoxCollisionBody(
@@ -35,13 +42,14 @@ export class Block {
         );
     }
 
-    invertColor() {
-        if (this.#color === this.goodColor) {
-            this.#color = this.badColor;
+    invert() {
+        console.log('invert', this.id);
+        if (this.isGood) {
+            this.isGood = false;
         } else {
-            this.#color = this.goodColor;
+            this.isGood = true;
         }
 
-        this.renderable.color = this.#color;
+        this.renderable.color = this.#getColorFromGoodness();
     }
 }
