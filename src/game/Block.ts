@@ -23,9 +23,6 @@ export class Block {
         public goodColor: string,
         public badColor: string
     ) {
-        Block.#count++;
-        this.id = Block.#count;
-
         this.renderable = new RoadBlockRenderable(this.context, {
             position: this.position,
             angle: this.angle,
@@ -43,7 +40,6 @@ export class Block {
     }
 
     invert() {
-        console.log('invert', this.id);
         if (this.isGood) {
             this.isGood = false;
         } else {

@@ -32,86 +32,39 @@ export class Game {
 
     constructor(canvas: HTMLCanvasElement) {
         this.canvas = canvas;
-        canvas.width = document.body.clientWidth;
-        canvas.height = document.body.clientHeight;
-
-        this.viewport = new Viewport(
-            this.context,
-            Vec2D.set(new Vec2D(), 0, 0),
-            50,
-            Vec2D.set(new Vec2D(), canvas.width, canvas.height)
-        );
-
-        this.renderer = new WorldRenderer(
-            this.context,
-            canvas.getContext('2d')!,
-            this.viewport
-        );
-        this.controller = new KeyboardControl(KeyCodeWASD);
-        this.controller.attach();
-
+        this.setupCanvasSize();
+        this.viewport = this.createViewport();
+        this.renderer = this.createRenderer();
+        this.controller = this.createController();
         this.initGameObjects();
     }
 
-    private initGameObjects() {
-        const grid = new Grid(this.context, 1, '#ddd');
-        this.world.add(grid);
+    private setupCanvasSize() {
+        this.canvas.width = document.body.clientWidth;
+        this.canvas.height = document.body.clientHeight;
+    }
 
-        const roadBlocks = this.createRoadBlocks();
-        this.collisionDetector = new CollisionDetector(this.context);
-
-        for (const block of roadBlocks) {
-            this.world.add(block.renderable);
-            this.terroristGravityCenterAverager.add(block.collider.position);
-            this.collisionDetector.addBody(block.collider, {
-                onCollisionStart: (body, other) => {
-                    if (other === this.car.collider) {
-                        if (block.isGood) {
-                            this.world.remove(block.renderable);
-                            this.collisionDetector.removeBody(body);
-                            this.terroristGravityCenterAverager.remove(
-                                body.position
-                            );
-                        } else {
-                            this.car.body.angularVelocity = 10;
-                            this.car.body.velocity.normalize();
-                            this.car.body.velocity.scale(-10);
-                        }
-                    } else if (other === this.terrorist.collider) {
-                        block.invert();
-                    }
-                },
-            });
-        }
-
-        this.car = new Car(
+    private createViewport(): Viewport {
+        return new Viewport(
             this.context,
             Vec2D.set(new Vec2D(), 0, 0),
-            fromDeg(90)
+            50,
+            Vec2D.set(new Vec2D(), this.canvas.width, this.canvas.height)
         );
-        this.terrorist = new Terrorist(
+    }
+
+    private createRenderer(): WorldRenderer {
+        return new WorldRenderer(
             this.context,
-            Vec2D.set(new Vec2D(), 10, 10),
-            fromDeg(90),
-            this.terroristGravityCenterAverager
+            this.canvas.getContext('2d')!,
+            this.viewport
         );
+    }
 
-        this.collisionDetector.addBody(this.car.collider);
-        this.collisionDetector.addBody(this.terrorist.collider);
-
-        this.world.add(this.car.renderable);
-        this.world.add(this.terrorist.renderable);
-        this.world.add(new CompassRenderable());
-        this.world.add(new SpeedometerRenderable(this.car.body));
-        this.world.add(
-            new TerroristIndicatorRenderable(
-                this.context,
-                this.car.body,
-                this.terrorist.body
-            )
-        );
-
-        this.setupControls();
+    private createController(): KeyboardControl {
+        const controller = new KeyboardControl(KeyCodeWASD);
+        controller.attach();
+        return controller;
     }
 
     private createRoadBlocks(): Block[] {
@@ -132,6 +85,75 @@ export class Game {
             }
         }
         return blocks;
+    }
+
+    private initGameObjects() {
+        this.world.add(new Grid(this.context, 1, '#ddd'));
+        const roadBlocks = this.createRoadBlocks();
+
+        this.initCollisionDetector(roadBlocks);
+        this.initCarAndTerrorist();
+        this.addRenderables(roadBlocks);
+        this.setupControls();
+    }
+
+    private initCollisionDetector(roadBlocks: Block[]) {
+        this.collisionDetector = new CollisionDetector(this.context);
+
+        for (const block of roadBlocks) {
+            this.world.add(block.renderable);
+            this.terroristGravityCenterAverager.add(block.collider.position);
+
+            this.collisionDetector.addBody(block.collider, {
+                onCollisionStart: (body, other) => {
+                    if (other === this.car.collider) {
+                        if (block.isGood) {
+                            this.world.remove(block.renderable);
+                            this.collisionDetector.removeBody(body);
+                            this.terroristGravityCenterAverager.remove(body.position);
+                        } else {
+                            this.car.body.angularVelocity = 10;
+                            this.car.body.velocity.normalize();
+                            this.car.body.velocity.scale(-10);
+                        }
+                    } else if (other === this.terrorist.collider) {
+                        block.invert();
+                    }
+                },
+            });
+        }
+    }
+
+    private initCarAndTerrorist() {
+        this.car = new Car(
+            this.context,
+            Vec2D.set(new Vec2D(), 0, 0),
+            fromDeg(90)
+        );
+
+        this.terrorist = new Terrorist(
+            this.context,
+            Vec2D.set(new Vec2D(), 10, 10),
+            fromDeg(90),
+            this.terroristGravityCenterAverager
+        );
+
+        this.collisionDetector.addBody(this.car.collider);
+        this.collisionDetector.addBody(this.terrorist.collider);
+    }
+
+    private addRenderables(blocks: Block[]) {
+        this.world.add(this.car.renderable);
+        this.world.add(this.terrorist.renderable);
+        this.world.add(new CompassRenderable());
+        this.world.add(new SpeedometerRenderable(this.car.body));
+        this.world.add(
+            new TerroristIndicatorRenderable(
+                this.context,
+                this.car.body,
+                this.terrorist.body
+            )
+        );
     }
 
     private setupControls() {
@@ -157,22 +179,26 @@ export class Game {
                 this.terrorist.update(dt);
             });
 
-            this.viewport.rotation = fromDeg(90) - this.car.body.angle;
-
-            this.context.vectorPool.borrow((acquire) => {
-                const tmp = acquire();
-                tmp.assign(this.car.body.position);
-                this.viewport.worldToScreenPoint(tmp);
-                tmp.set(tmp.x, tmp.y - this.canvas.height * 0.25);
-                this.viewport.screenToWorldPoint(tmp);
-                this.viewport.center.assign(tmp);
-            });
-
+            this.updateCamera();
             this.collisionDetector.detect();
             this.renderer.render(this.world);
+
             requestAnimationFrame(loop);
         };
 
         loop();
+    }
+
+    private updateCamera() {
+        this.viewport.rotation = fromDeg(90) - this.car.body.angle;
+
+        this.context.vectorPool.borrow((acquire) => {
+            const tmp = acquire();
+            tmp.assign(this.car.body.position);
+            this.viewport.worldToScreenPoint(tmp);
+            tmp.set(tmp.x, tmp.y - this.canvas.height * 0.25);
+            this.viewport.screenToWorldPoint(tmp);
+            this.viewport.center.assign(tmp);
+        });
     }
 }
