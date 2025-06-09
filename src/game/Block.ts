@@ -7,8 +7,6 @@ import { RoadBlockRenderable } from './renderables/RoadBlockRenderable';
 export class Block {
     readonly renderable: RoadBlockRenderable;
     readonly collider: CollisionBody;
-    readonly id: number;
-    static #count = 0;
 
     #getColorFromGoodness() {
         return this.isGood ? this.goodColor : this.badColor;
