@@ -185,7 +185,7 @@ export class Game {
     }
 
     private addRenderables(blocks: Block[]) {
-        const grid = new CurvedGrid(this.context, 1, '#ddd');
+        const grid = new CurvedGrid(this.context, 1, '#222');
         grid.setGravityWell(this.terrorist.body.position);
         this.world.add(grid);
 

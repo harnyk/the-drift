@@ -36,7 +36,7 @@ export class CarRenderable implements Renderable {
     }
 
     #renderWheel(ctx: CanvasRenderingContext2D, center: IVec2D) {
-        ctx.fillStyle = 'black';
+        ctx.fillStyle = '#aaa';
         const size = this.#wheelSize;
         ctx.fillRect(
             center.x - size.x / 2,

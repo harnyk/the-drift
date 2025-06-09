@@ -9,11 +9,7 @@ export class CurvedGrid implements Renderable {
 
     private gravityWell: ImmutableVec2D | null = null;
 
-    constructor(
-        private readonly context: Context,
-        spacing = 1,
-        color = '#ddd'
-    ) {
+    constructor(private readonly context: Context, spacing = 1, color: string) {
         this.spacing = spacing;
         this.color = color;
     }
