@@ -1,7 +1,6 @@
 import { Context } from './engine/Context';
 import { FixedTimestepIntegrator } from './engine/FixedTimestepIntegrator';
 import { fromDeg } from './engine/fromDeg';
-import { Grid } from './engine/Grid';
 import { CollisionDetector } from './engine/physics/CollisionDetector';
 import { Vec2D } from './engine/vec/Vec2D';
 import { Vec2DAverager } from './engine/Vec2DAverager';
@@ -16,6 +15,7 @@ import { CompassRenderable } from './game/renderables/CompassRenderable';
 import { CurvedGrid } from './game/renderables/CurvedGrid';
 import { GameStateOverlayRenderable } from './game/renderables/GameStateOverlayRenderable';
 import { SpeedometerRenderable } from './game/renderables/SpeedometerRenderable';
+import { TerroristEyesRenderable } from './game/renderables/TerroristEyesRenderable';
 import { TerroristIndicatorRenderable } from './game/renderables/TerroristIndicatorRenderable';
 import { Terrorist } from './game/Terrorist';
 
@@ -31,6 +31,7 @@ export class Game {
     private gameState = new GameStateManager();
     private car!: Car;
     private terrorist!: Terrorist;
+    private terroristEyes!: TerroristEyesRenderable;
     private collisionDetector!: CollisionDetector;
 
     constructor(canvas: HTMLCanvasElement) {
@@ -103,9 +104,17 @@ export class Game {
 
         this.initCollisionDetector(roadBlocks);
         this.initCarAndTerrorist();
+        this.initTerroristEyes();
         this.addRenderables(roadBlocks);
 
         this.setupControls();
+    }
+
+    private initTerroristEyes() {
+        this.terroristEyes = new TerroristEyesRenderable(
+            this.context,
+            this.terrorist.body
+        );
     }
 
     private initCollisionDetector(roadBlocks: Block[]) {
@@ -157,6 +166,10 @@ export class Game {
         });
     }
 
+    private updateTerroristEyesReaction(_dt: number) {
+        this.terroristEyes.targetPosition.assign(this.car.body.position);
+    }
+
     private initCarAndTerrorist() {
         this.car = new Car(
             this.context,
@@ -193,6 +206,7 @@ export class Game {
 
         this.world.add(this.car.renderable);
         this.world.add(this.terrorist.renderable);
+        this.world.add(this.terroristEyes);
         this.world.add(new CompassRenderable());
         this.world.add(new SpeedometerRenderable(this.car.body));
         this.world.add(
@@ -230,6 +244,7 @@ export class Game {
 
                 this.car.update(dt);
                 this.terrorist.update(dt);
+                this.updateTerroristEyesReaction(dt);
                 this.checkVictoryOrDefeat();
             });
 
