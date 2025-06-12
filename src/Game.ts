@@ -88,7 +88,7 @@ export class Game {
                         ),
                         Vec2D.set(new Vec2D(), 0.5, 0.5),
                         0,
-                        true,
+                        false,
                         '#0a0',
                         '#a00'
                     )
