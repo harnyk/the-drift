@@ -8,10 +8,14 @@ export class TerroristEyesRenderable implements Renderable {
     static readonly polygonSides = 5;
     static readonly polygonRadius = 2.8;
     static readonly eyeSpacing = 1;
-    static readonly openDistanceThreshold = 16;
+    static readonly openDistanceThreshold = 10;
     static readonly eyeRadius = 0.3;
-    static readonly eyePairOffset = 0.5;
-    static readonly eyePairNormalOffset = 0.6;
+    static readonly eyePairOffset = 0.6;
+    static readonly eyePairNormalOffset = 0.2;
+    static readonly eyeOpenMin = 0.01;
+    static readonly eyeOpenMax = 2.0;
+    static readonly eyeColor = '#700';
+    static readonly pupilColor = '#300';
 
     public readonly targetPosition = new Vec2D();
 
@@ -30,17 +34,16 @@ export class TerroristEyesRenderable implements Renderable {
             const v1 = acquire();
             const mid = acquire();
             const tangent = acquire();
+            const normal = acquire();
             const eye1 = acquire();
             const eye2 = acquire();
 
             const sides = TerroristEyesRenderable.polygonSides;
             const angleStep = (2 * Math.PI) / sides;
             const radius = TerroristEyesRenderable.polygonRadius;
-            const spacing = TerroristEyesRenderable.eyeSpacing / 2;
 
             let closestIndex = -1;
             let minDistSq = Infinity;
-            const mids: Vec2D[] = [];
 
             for (let i = 0; i < sides; i++) {
                 const a0 = i * angleStep;
@@ -59,7 +62,6 @@ export class TerroristEyesRenderable implements Renderable {
                 p1.add(tPos);
 
                 m.set((p0.x + p1.x) / 2, (p0.y + p1.y) / 2);
-                mids.push(m);
 
                 const dx = m.x - rPos.x;
                 const dy = m.y - rPos.y;
@@ -90,8 +92,12 @@ export class TerroristEyesRenderable implements Renderable {
                 tangent.set(v1.x - v0.x, v1.y - v0.y);
                 tangent.normalize();
 
-                const pairOffset = TerroristEyesRenderable.eyePairOffset;
+                // Смещение mid наружу по нормали к грани
+                normal.set(-tangent.y, tangent.x);
+                mid.x += normal.x * TerroristEyesRenderable.eyePairNormalOffset;
+                mid.y += normal.y * TerroristEyesRenderable.eyePairNormalOffset;
 
+                const pairOffset = TerroristEyesRenderable.eyePairOffset;
                 eye1.set(
                     mid.x - tangent.x * pairOffset,
                     mid.y - tangent.y * pairOffset
@@ -138,51 +144,50 @@ export class TerroristEyesRenderable implements Renderable {
         const dy = pos.y - this.targetPosition.y;
         const dist = Math.sqrt(dx * dx + dy * dy);
 
-        const maxDist = 16;
+        const maxDist = TerroristEyesRenderable.openDistanceThreshold;
         const minDist = 2;
         const t = Math.max(
             0,
             Math.min(1, (maxDist - dist) / (maxDist - minDist))
         );
-        const eyeOpen = 0.15 + 0.85 * t;
+        const eyeOpen =
+            TerroristEyesRenderable.eyeOpenMin +
+            t *
+                (TerroristEyesRenderable.eyeOpenMax -
+                    TerroristEyesRenderable.eyeOpenMin);
 
         this.context.vectorPool.borrow((acquire) => {
             const left = acquire();
             const right = acquire();
             const normal = acquire();
 
+            normal.set(-tangent.y, tangent.x);
             tangent.normalize();
-            normal.set(-tangent.y, tangent.x); // нормаль вверх от tangent
 
-            // края глаза вдоль tangent
             left.set(pos.x - tangent.x * r, pos.y - tangent.y * r);
             right.set(pos.x + tangent.x * r, pos.y + tangent.y * r);
 
-            // верхняя точка дуги — от центра вверх по нормали
             const upperCtrl = acquire();
             upperCtrl.set(
                 pos.x + normal.x * r * eyeOpen,
                 pos.y + normal.y * r * eyeOpen
             );
 
-            // нижняя точка дуги — от центра вниз по нормали
             const lowerCtrl = acquire();
             lowerCtrl.set(
                 pos.x - normal.x * r * eyeOpen,
                 pos.y - normal.y * r * eyeOpen
             );
 
-            // Рисуем форму глаза
             ctx.beginPath();
             ctx.moveTo(left.x, left.y);
             ctx.quadraticCurveTo(upperCtrl.x, upperCtrl.y, right.x, right.y);
             ctx.quadraticCurveTo(lowerCtrl.x, lowerCtrl.y, left.x, left.y);
             ctx.closePath();
 
-            ctx.fillStyle = '#eee';
+            ctx.fillStyle = TerroristEyesRenderable.eyeColor;
             ctx.fill();
 
-            // зрачок
             const dir = acquire();
             dir.set(
                 this.targetPosition.x - pos.x,
@@ -190,13 +195,13 @@ export class TerroristEyesRenderable implements Renderable {
             );
             dir.normalize();
 
-            const pupilOffset = r * 0.4 * eyeOpen;
+            const pupilOffset = r * 0.2 * eyeOpen;
             const pupilX = pos.x + dir.x * pupilOffset;
             const pupilY = pos.y + dir.y * pupilOffset;
 
             ctx.beginPath();
             ctx.arc(pupilX, pupilY, r * 0.3, 0, 2 * Math.PI);
-            ctx.fillStyle = '#744';
+            ctx.fillStyle = TerroristEyesRenderable.pupilColor;
             ctx.fill();
         });
     }
