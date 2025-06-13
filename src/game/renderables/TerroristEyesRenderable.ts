@@ -40,8 +40,6 @@ export class TerroristEyesRenderable implements Renderable {
             let minDistSq = Infinity;
             const mids: Vec2D[] = [];
 
-            // Compute edges midpoints
-            // and find closest
             for (let i = 0; i < sides; i++) {
                 const a0 = i * angleStep;
                 const a1 = ((i + 1) % sides) * angleStep;
@@ -101,10 +99,12 @@ export class TerroristEyesRenderable implements Renderable {
                 const isClosest = i === closestIndex;
                 const open = isClosest && minDistSq < thresholdSq;
 
+                ctx.save();
                 viewport.inWorldCoordinates(ctx, () => {
                     this.#renderEye(ctx, eye1, open, tangent);
                     this.#renderEye(ctx, eye2, open, tangent);
                 });
+                ctx.restore();
             }
         });
     }
@@ -113,17 +113,36 @@ export class TerroristEyesRenderable implements Renderable {
         ctx: CanvasRenderingContext2D,
         pos: Vec2D,
         open: boolean,
-        tangent: Vec2D
+        _tangent: Vec2D
     ) {
         const r = TerroristEyesRenderable.eyeRadius;
+
         if (open) {
             ctx.beginPath();
             ctx.arc(pos.x, pos.y, r, 0, 2 * Math.PI);
-            ctx.fillStyle = '#711';
+            ctx.fillStyle = '#700';
             ctx.fill();
+
+            this.context.vectorPool.borrow((acquire) => {
+                const dir = acquire();
+                dir.set(
+                    this.targetPosition.x - pos.x,
+                    this.targetPosition.y - pos.y
+                );
+                dir.normalize();
+
+                const pupilOffset = r * 0.4;
+                const pupilX = pos.x + dir.x * pupilOffset;
+                const pupilY = pos.y + dir.y * pupilOffset;
+
+                ctx.beginPath();
+                ctx.arc(pupilX, pupilY, r * 0.3, 0, 2 * Math.PI);
+                ctx.fillStyle = '#744';
+                ctx.fill();
+            });
         } else {
-            const dx = tangent.x * r;
-            const dy = tangent.y * r;
+            const dx = _tangent.x * r;
+            const dy = _tangent.y * r;
             ctx.beginPath();
             ctx.moveTo(pos.x - dx, pos.y - dy);
             ctx.lineTo(pos.x + dx, pos.y + dy);
