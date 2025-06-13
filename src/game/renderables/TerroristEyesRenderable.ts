@@ -92,7 +92,7 @@ export class TerroristEyesRenderable implements Renderable {
                 tangent.set(v1.x - v0.x, v1.y - v0.y);
                 tangent.normalize();
 
-                // Смещение mid наружу по нормали к грани
+                // Shift mid outward along the normal to the side
                 normal.set(-tangent.y, tangent.x);
                 mid.x += normal.x * TerroristEyesRenderable.eyePairNormalOffset;
                 mid.y += normal.y * TerroristEyesRenderable.eyePairNormalOffset;
@@ -179,15 +179,23 @@ export class TerroristEyesRenderable implements Renderable {
                 pos.y - normal.y * r * eyeOpen
             );
 
+            // Eye opening shape
+            ctx.save();
+
             ctx.beginPath();
             ctx.moveTo(left.x, left.y);
             ctx.quadraticCurveTo(upperCtrl.x, upperCtrl.y, right.x, right.y);
             ctx.quadraticCurveTo(lowerCtrl.x, lowerCtrl.y, left.x, left.y);
             ctx.closePath();
 
+            // Eye filling
             ctx.fillStyle = TerroristEyesRenderable.eyeColor;
             ctx.fill();
 
+            // Clipping for the pupil and future elements (eyelid, liquid, etc.)
+            ctx.clip();
+
+            // Pupil
             const dir = acquire();
             dir.set(
                 this.targetPosition.x - pos.x,
@@ -203,6 +211,11 @@ export class TerroristEyesRenderable implements Renderable {
             ctx.arc(pupilX, pupilY, r * 0.3, 0, 2 * Math.PI);
             ctx.fillStyle = TerroristEyesRenderable.pupilColor;
             ctx.fill();
+
+            // TODO: third eyelid will appear here, inside clip()
+
+            ctx.restore();
         });
     }
 }
+
