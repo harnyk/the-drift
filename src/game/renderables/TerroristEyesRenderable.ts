@@ -7,9 +7,11 @@ import { Context } from '../../engine/Context';
 export class TerroristEyesRenderable implements Renderable {
     static readonly polygonSides = 5;
     static readonly polygonRadius = 2.8;
-    static readonly eyeSpacing = 0.6;
+    static readonly eyeSpacing = 1;
     static readonly openDistanceThreshold = 16;
-    static readonly eyeRadius = 0.15;
+    static readonly eyeRadius = 0.3;
+    static readonly eyePairOffset = 0.5;
+    static readonly eyePairNormalOffset = 0.6;
 
     public readonly targetPosition = new Vec2D();
 
@@ -88,13 +90,16 @@ export class TerroristEyesRenderable implements Renderable {
                 tangent.set(v1.x - v0.x, v1.y - v0.y);
                 tangent.normalize();
 
-                eye1.assign(tangent);
-                eye1.scale(-spacing);
-                eye1.add(mid);
+                const pairOffset = TerroristEyesRenderable.eyePairOffset;
 
-                eye2.assign(tangent);
-                eye2.scale(spacing);
-                eye2.add(mid);
+                eye1.set(
+                    mid.x - tangent.x * pairOffset,
+                    mid.y - tangent.y * pairOffset
+                );
+                eye2.set(
+                    mid.x + tangent.x * pairOffset,
+                    mid.y + tangent.y * pairOffset
+                );
 
                 const isClosest = i === closestIndex;
                 const open = isClosest && minDistSq < thresholdSq;
@@ -113,42 +118,86 @@ export class TerroristEyesRenderable implements Renderable {
         ctx: CanvasRenderingContext2D,
         pos: Vec2D,
         open: boolean,
-        _tangent: Vec2D
+        tangent: Vec2D
     ) {
         const r = TerroristEyesRenderable.eyeRadius;
 
-        if (open) {
-            ctx.beginPath();
-            ctx.arc(pos.x, pos.y, r, 0, 2 * Math.PI);
-            ctx.fillStyle = '#700';
-            ctx.fill();
-
-            this.context.vectorPool.borrow((acquire) => {
-                const dir = acquire();
-                dir.set(
-                    this.targetPosition.x - pos.x,
-                    this.targetPosition.y - pos.y
-                );
-                dir.normalize();
-
-                const pupilOffset = r * 0.4;
-                const pupilX = pos.x + dir.x * pupilOffset;
-                const pupilY = pos.y + dir.y * pupilOffset;
-
-                ctx.beginPath();
-                ctx.arc(pupilX, pupilY, r * 0.3, 0, 2 * Math.PI);
-                ctx.fillStyle = '#744';
-                ctx.fill();
-            });
-        } else {
-            const dx = _tangent.x * r;
-            const dy = _tangent.y * r;
+        if (!open) {
+            const dx = tangent.x * r;
+            const dy = tangent.y * r;
             ctx.beginPath();
             ctx.moveTo(pos.x - dx, pos.y - dy);
             ctx.lineTo(pos.x + dx, pos.y + dy);
             ctx.strokeStyle = '#222';
             ctx.lineWidth = 0.05;
             ctx.stroke();
+            return;
         }
+
+        const dx = pos.x - this.targetPosition.x;
+        const dy = pos.y - this.targetPosition.y;
+        const dist = Math.sqrt(dx * dx + dy * dy);
+
+        const maxDist = 16;
+        const minDist = 2;
+        const t = Math.max(
+            0,
+            Math.min(1, (maxDist - dist) / (maxDist - minDist))
+        );
+        const eyeOpen = 0.15 + 0.85 * t;
+
+        this.context.vectorPool.borrow((acquire) => {
+            const left = acquire();
+            const right = acquire();
+            const normal = acquire();
+
+            tangent.normalize();
+            normal.set(-tangent.y, tangent.x); // нормаль вверх от tangent
+
+            // края глаза вдоль tangent
+            left.set(pos.x - tangent.x * r, pos.y - tangent.y * r);
+            right.set(pos.x + tangent.x * r, pos.y + tangent.y * r);
+
+            // верхняя точка дуги — от центра вверх по нормали
+            const upperCtrl = acquire();
+            upperCtrl.set(
+                pos.x + normal.x * r * eyeOpen,
+                pos.y + normal.y * r * eyeOpen
+            );
+
+            // нижняя точка дуги — от центра вниз по нормали
+            const lowerCtrl = acquire();
+            lowerCtrl.set(
+                pos.x - normal.x * r * eyeOpen,
+                pos.y - normal.y * r * eyeOpen
+            );
+
+            // Рисуем форму глаза
+            ctx.beginPath();
+            ctx.moveTo(left.x, left.y);
+            ctx.quadraticCurveTo(upperCtrl.x, upperCtrl.y, right.x, right.y);
+            ctx.quadraticCurveTo(lowerCtrl.x, lowerCtrl.y, left.x, left.y);
+            ctx.closePath();
+
+            ctx.fillStyle = '#eee';
+            ctx.fill();
+
+            // зрачок
+            const dir = acquire();
+            dir.set(
+                this.targetPosition.x - pos.x,
+                this.targetPosition.y - pos.y
+            );
+            dir.normalize();
+
+            const pupilOffset = r * 0.4 * eyeOpen;
+            const pupilX = pos.x + dir.x * pupilOffset;
+            const pupilY = pos.y + dir.y * pupilOffset;
+
+            ctx.beginPath();
+            ctx.arc(pupilX, pupilY, r * 0.3, 0, 2 * Math.PI);
+            ctx.fillStyle = '#744';
+            ctx.fill();
+        });
     }
 }
