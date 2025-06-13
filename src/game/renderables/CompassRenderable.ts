@@ -17,37 +17,33 @@ export class CompassRenderable implements Renderable {
         this.#viewportCenter.y = this.size / 2 + padding;
         const center = this.#viewportCenter;
 
-        ctx.save();
+        viewport.inScreenCoordinates(ctx, () => {
+            ctx.translate(center.x, center.y);
 
-        // Рисуем в экранных координатах, не применяя transform
-        ctx.setTransform(1, 0, 0, 1, 0, 0);
-        ctx.translate(center.x, center.y);
+            // Main circle
+            ctx.beginPath();
+            ctx.arc(0, 0, this.size / 2, 0, Math.PI * 2);
+            ctx.fillStyle = '#222';
+            ctx.fill();
 
-        // Основной круг
-        ctx.beginPath();
-        ctx.arc(0, 0, this.size / 2, 0, Math.PI * 2);
-        ctx.fillStyle = '#222';
-        ctx.fill();
+            // Rotate arrows by viewport rotation
+            ctx.rotate(-viewport.rotation);
 
-        // Вращаем стрелки в обратную сторону камеры (чтобы север был вверх, юг — вниз)
-        ctx.rotate(-viewport.rotation);
+            // South arrow (90°, down)
+            ctx.beginPath();
+            ctx.moveTo(0, 0);
+            ctx.lineTo(0, this.size / 2 - 5);
+            ctx.strokeStyle = 'red';
+            ctx.lineWidth = 4;
+            ctx.stroke();
 
-        // Южная стрелка (вниз, 90°)
-        ctx.beginPath();
-        ctx.moveTo(0, 0);
-        ctx.lineTo(0, this.size / 2 - 5);
-        ctx.strokeStyle = 'red';
-        ctx.lineWidth = 4;
-        ctx.stroke();
-
-        // Северная стрелка (вверх, 270°)
-        ctx.beginPath();
-        ctx.moveTo(0, 0);
-        ctx.lineTo(0, -this.size / 2 + 5);
-        ctx.strokeStyle = 'white';
-        ctx.lineWidth = 2;
-        ctx.stroke();
-
-        ctx.restore();
+            // North arrow (270°, up)
+            ctx.beginPath();
+            ctx.moveTo(0, 0);
+            ctx.lineTo(0, -this.size / 2 + 5);
+            ctx.strokeStyle = 'white';
+            ctx.lineWidth = 2;
+            ctx.stroke();
+        });
     }
 }

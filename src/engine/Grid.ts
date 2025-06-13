@@ -18,31 +18,28 @@ export class Grid implements Renderable {
     render(ctx: CanvasRenderingContext2D, viewport: Viewport): void {
         const bounds = viewport.getWorldBounds();
 
-        ctx.save();
-        const m = viewport.worldToScreen.values;
-        ctx.setTransform(m[0], m[3], m[1], m[4], m[2], m[5]);
+        viewport.inWorldCoordinates(ctx, () => {
+            ctx.beginPath();
+            for (
+                let x = Math.floor(bounds.minX);
+                x <= bounds.maxX;
+                x += this.spacing
+            ) {
+                ctx.moveTo(x, bounds.minY);
+                ctx.lineTo(x, bounds.maxY);
+            }
+            for (
+                let y = Math.floor(bounds.minY);
+                y <= bounds.maxY;
+                y += this.spacing
+            ) {
+                ctx.moveTo(bounds.minX, y);
+                ctx.lineTo(bounds.maxX, y);
+            }
 
-        ctx.beginPath();
-        for (
-            let x = Math.floor(bounds.minX);
-            x <= bounds.maxX;
-            x += this.spacing
-        ) {
-            ctx.moveTo(x, bounds.minY);
-            ctx.lineTo(x, bounds.maxY);
-        }
-        for (
-            let y = Math.floor(bounds.minY);
-            y <= bounds.maxY;
-            y += this.spacing
-        ) {
-            ctx.moveTo(bounds.minX, y);
-            ctx.lineTo(bounds.maxX, y);
-        }
-
-        ctx.strokeStyle = this.color;
-        ctx.lineWidth = 0.01;
-        ctx.stroke();
-        ctx.restore();
+            ctx.strokeStyle = this.color;
+            ctx.lineWidth = 0.01;
+            ctx.stroke();
+        });
     }
 }

@@ -21,47 +21,52 @@ export class CurvedGrid implements Renderable {
     render(ctx: CanvasRenderingContext2D, viewport: Viewport): void {
         const bounds = viewport.getWorldBounds();
 
-        ctx.save();
-        const m = viewport.worldToScreen.values;
-        ctx.setTransform(m[0], m[3], m[1], m[4], m[2], m[5]);
+        viewport.inWorldCoordinates(ctx, () => {
+            const strength = 1.5;
+            const radius = 8;
 
-        const strength = 1.5;
-        const radius = 8;
+            const spacing = this.spacing;
 
-        const spacing = this.spacing;
+            ctx.beginPath();
 
-        ctx.beginPath();
-
-        // Вертикали
-        for (let x = Math.floor(bounds.minX); x <= bounds.maxX; x += spacing) {
-            let first = true;
-            for (
-                let y = Math.floor(bounds.minY);
-                y <= bounds.maxY;
-                y += spacing
-            ) {
-                this.#distortAndLineTo(ctx, x, y, first, radius, strength);
-                first = false;
-            }
-        }
-
-        // Горизонтали
-        for (let y = Math.floor(bounds.minY); y <= bounds.maxY; y += spacing) {
-            let first = true;
+            // Verticals
             for (
                 let x = Math.floor(bounds.minX);
                 x <= bounds.maxX;
                 x += spacing
             ) {
-                this.#distortAndLineTo(ctx, x, y, first, radius, strength);
-                first = false;
+                let first = true;
+                for (
+                    let y = Math.floor(bounds.minY);
+                    y <= bounds.maxY;
+                    y += spacing
+                ) {
+                    this.#distortAndLineTo(ctx, x, y, first, radius, strength);
+                    first = false;
+                }
             }
-        }
 
-        ctx.strokeStyle = this.color;
-        ctx.lineWidth = 0.01;
-        ctx.stroke();
-        ctx.restore();
+            // Horizontals
+            for (
+                let y = Math.floor(bounds.minY);
+                y <= bounds.maxY;
+                y += spacing
+            ) {
+                let first = true;
+                for (
+                    let x = Math.floor(bounds.minX);
+                    x <= bounds.maxX;
+                    x += spacing
+                ) {
+                    this.#distortAndLineTo(ctx, x, y, first, radius, strength);
+                    first = false;
+                }
+            }
+
+            ctx.strokeStyle = this.color;
+            ctx.lineWidth = 0.01;
+            ctx.stroke();
+        });
     }
 
     #distortAndLineTo(

@@ -12,15 +12,14 @@ export class SpeedometerRenderable implements Renderable {
     render(ctx: CanvasRenderingContext2D, viewport: Viewport): void {
         const speed = this.body.velocity.length;
 
-        ctx.save();
-        ctx.setTransform(1, 0, 0, 1, 0, 0); // экранные координаты
-        ctx.font = '20px monospace';
-        ctx.fillStyle = '#8b008b';
-        ctx.textAlign = 'left';
-        ctx.textBaseline = 'bottom';
+        viewport.inScreenCoordinates(ctx, () => {
+            ctx.font = '20px monospace';
+            ctx.fillStyle = '#8b008b';
+            ctx.textAlign = 'left';
+            ctx.textBaseline = 'bottom';
 
-        const text = `Speed: ${speed.toFixed(1)} u/s`;
-        ctx.fillText(text, 10, viewport.canvasSize.y - 10);
-        ctx.restore();
+            const text = `Speed: ${speed.toFixed(1)} u/s`;
+            ctx.fillText(text, 10, viewport.canvasSize.y - 10);
+        });
     }
 }

@@ -11,22 +11,43 @@ export class TerroristIndicatorRenderable implements Renderable {
         private readonly terroristBody: RigidBody2D
     ) {}
 
+    private readonly baseLength = 20;
+    private readonly baseThickness = 4;
+    private readonly maxScale = 10;
+    private readonly minDist = 3;
+    private readonly maxDist = 30;
+    private readonly color = 'rgba(255, 0, 0, 0.7)';
+
     #indicatorPosition = new Vec2D();
     #indicatorAngle = 0;
 
     render(ctx: CanvasRenderingContext2D, viewport: Viewport): void {
-        if (!this.#computeIndicatorPosition(viewport)) {
-            return;
-        }
+        if (!this.#computeIndicatorPosition(viewport)) return;
 
-        ctx.save();
-        ctx.setTransform(1, 0, 0, 1, 0, 0);
-        ctx.translate(this.#indicatorPosition.x, this.#indicatorPosition.y);
-        ctx.rotate(this.#indicatorAngle);
+        const carPos = this.carBody.position;
+        const terroristPos = this.terroristBody.position;
+        const dist = Math.hypot(
+            terroristPos.x - carPos.x,
+            terroristPos.y - carPos.y
+        );
 
-        ctx.fillStyle = 'rgba(255, 0, 0, 0.6)';
-        ctx.fillRect(-10, -2, 20, 4);
-        ctx.restore();
+        const normalized = Math.min(
+            1,
+            Math.max(0, (this.maxDist - dist) / (this.maxDist - this.minDist))
+        );
+        const thicknessScale = 1 + normalized * (this.maxScale - 1);
+
+        viewport.inScreenCoordinates(ctx, () => {
+            ctx.translate(this.#indicatorPosition.x, this.#indicatorPosition.y);
+            ctx.rotate(this.#indicatorAngle);
+            ctx.fillStyle = this.color;
+            ctx.fillRect(
+                -this.baseLength / 2,
+                (-this.baseThickness * thicknessScale) / 2,
+                this.baseLength,
+                this.baseThickness * thicknessScale
+            );
+        });
     }
 
     #computeIndicatorPosition(viewport: Viewport): boolean {
@@ -39,14 +60,13 @@ export class TerroristIndicatorRenderable implements Renderable {
             terroristScreen.assign(this.terroristBody.position);
             viewport.worldToScreenPoint(terroristScreen);
 
-            // Check: is the terrorist inside the visible screen
             if (
                 terroristScreen.x >= 0 &&
                 terroristScreen.x <= viewport.canvasSize.x &&
                 terroristScreen.y >= 0 &&
                 terroristScreen.y <= viewport.canvasSize.y
             ) {
-                return false; // it is inside
+                return false;
             }
 
             const dir = acquire();
@@ -64,17 +84,15 @@ export class TerroristIndicatorRenderable implements Renderable {
             let tmin = -Infinity;
             let tmax = Infinity;
 
-            // X slab
             if (Math.abs(dx) > 1e-5) {
                 const tx1 = (minX - carScreen.x) / dx;
                 const tx2 = (maxX - carScreen.x) / dx;
                 tmin = Math.max(tmin, Math.min(tx1, tx2));
                 tmax = Math.min(tmax, Math.max(tx1, tx2));
             } else if (carScreen.x < minX || carScreen.x > maxX) {
-                return false; // parallel and out of the screen
+                return false;
             }
 
-            // Y slab
             if (Math.abs(dy) > 1e-5) {
                 const ty1 = (minY - carScreen.y) / dy;
                 const ty2 = (maxY - carScreen.y) / dy;
@@ -86,12 +104,11 @@ export class TerroristIndicatorRenderable implements Renderable {
 
             if (tmax < tmin || tmax < 0) return false;
 
-            const t = tmin > 0 ? tmin : tmax; // берём ближайшее валидное
+            const t = tmin > 0 ? tmin : tmax;
 
             const x = carScreen.x + dx * t;
             const y = carScreen.y + dy * t;
 
-            // angle of the edge normal
             let angle = 0;
             if (Math.abs(x - minX) < 1) angle = Math.PI;
             else if (Math.abs(x - maxX) < 1) angle = 0;

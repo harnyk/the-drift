@@ -63,6 +63,27 @@ export class Viewport {
         return this.#worldToScreen;
     }
 
+    inWorldCoordinates(ctx: CanvasRenderingContext2D, fn: () => void): void {
+        ctx.save();
+        try {
+            const m = this.worldToScreen.values;
+            ctx.setTransform(m[0], m[3], m[1], m[4], m[2], m[5]);
+            fn();
+        } finally {
+            ctx.restore();
+        }
+    }
+
+    inScreenCoordinates(ctx: CanvasRenderingContext2D, fn: () => void): void {
+        ctx.save();
+        try {
+            ctx.setTransform(1, 0, 0, 1, 0, 0);
+            fn();
+        } finally {
+            ctx.restore();
+        }
+    }
+
     worldToScreenPoint(p: Vec2D): void {
         this.worldToScreen.transformPointInPlace(p);
     }

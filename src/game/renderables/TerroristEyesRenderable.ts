@@ -40,7 +40,8 @@ export class TerroristEyesRenderable implements Renderable {
             let minDistSq = Infinity;
             const mids: Vec2D[] = [];
 
-            // Вычисляем центры граней
+            // Compute edges midpoints
+            // and find closest
             for (let i = 0; i < sides; i++) {
                 const a0 = i * angleStep;
                 const a1 = ((i + 1) % sides) * angleStep;
@@ -69,7 +70,8 @@ export class TerroristEyesRenderable implements Renderable {
                 }
             }
 
-            const thresholdSq = TerroristEyesRenderable.openDistanceThreshold ** 2;
+            const thresholdSq =
+                TerroristEyesRenderable.openDistanceThreshold ** 2;
 
             for (let i = 0; i < sides; i++) {
                 const a0 = i * angleStep;
@@ -99,19 +101,20 @@ export class TerroristEyesRenderable implements Renderable {
                 const isClosest = i === closestIndex;
                 const open = isClosest && minDistSq < thresholdSq;
 
-                ctx.save();
-                const m = viewport.worldToScreen.values;
-                ctx.setTransform(m[0], m[3], m[1], m[4], m[2], m[5]);
-
-                this.#renderEye(ctx, eye1, open, tangent);
-                this.#renderEye(ctx, eye2, open, tangent);
-
-                ctx.restore();
+                viewport.inWorldCoordinates(ctx, () => {
+                    this.#renderEye(ctx, eye1, open, tangent);
+                    this.#renderEye(ctx, eye2, open, tangent);
+                });
             }
         });
     }
 
-    #renderEye(ctx: CanvasRenderingContext2D, pos: Vec2D, open: boolean, tangent: Vec2D) {
+    #renderEye(
+        ctx: CanvasRenderingContext2D,
+        pos: Vec2D,
+        open: boolean,
+        tangent: Vec2D
+    ) {
         const r = TerroristEyesRenderable.eyeRadius;
         if (open) {
             ctx.beginPath();
