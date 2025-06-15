@@ -74,6 +74,7 @@ Maintains contact state between frames.
 Main game loop. Initializes objects, integrates physics, handles collisions, rendering and game state.
 **ENTRY POINT** for Codex understanding the system.
 Provides `resize(width, height)` to adjust canvas and viewport when the browser window size changes.
+Exposes `pause()`, `resume()` and `togglePause()` to control the simulation loop.
 
 #### `Block.ts`
 
@@ -129,7 +130,8 @@ ReactDOM.createRoot(document.getElementById('root') as HTMLElement).render(
 React component that creates the `Game` once and attaches it to a `<canvas>`
 element. Uses `useEffect` with an empty dependency list so the game is not
 restarted on prop changes. Handles window resizing and updates the game's
-viewport via `Game.resize()`.
+viewport via `Game.resize()`. Accepts a `paused` prop to pause or resume the
+game instance.
 
 #### `src/LayeredLayout.tsx`
 
@@ -142,10 +144,16 @@ the bottom-right corner.
 Transparent overlay used for React interface elements. Currently only displays
 a small debug label in the bottom-right corner.
 
+#### `src/PauseMenu.tsx`
+
+Simple overlay shown when the game is paused. Currently renders an empty box
+centered on the screen.
+
 #### `src/App.tsx`
 
 Root React component. Renders `LayeredLayout` which hosts the game and UI
-layers.
+layers. Handles `Escape` key to toggle the `PauseMenu` layer and passes the
+pause state to `GameCanvas`.
 
 ---
 

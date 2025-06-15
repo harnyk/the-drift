@@ -33,6 +33,7 @@ export class Game {
     private terrorist!: Terrorist;
     private terroristEyes!: TerroristEyesRenderable;
     private collisionDetector!: CollisionDetector;
+    private paused = false;
 
     constructor(canvas: HTMLCanvasElement) {
         this.canvas = canvas;
@@ -237,16 +238,20 @@ export class Game {
 
     public start() {
         const loop = () => {
-            this.integrator.update((dt) => {
-                if (!this.gameState.isPlaying()) return;
+            if (!this.paused) {
+                this.integrator.update((dt) => {
+                    if (!this.gameState.isPlaying()) return;
 
-                this.applyMutualGravity();
+                    this.applyMutualGravity();
 
-                this.car.update(dt);
-                this.terrorist.update(dt);
-                this.updateTerroristEyesReaction(dt);
-                this.checkVictoryOrDefeat();
-            });
+                    this.car.update(dt);
+                    this.terrorist.update(dt);
+                    this.updateTerroristEyesReaction(dt);
+                    this.checkVictoryOrDefeat();
+                });
+            } else {
+                this.integrator.reset();
+            }
 
             this.updateCamera();
             this.collisionDetector.detect();
@@ -262,6 +267,18 @@ export class Game {
         this.canvas.width = width;
         this.canvas.height = height;
         this.viewport.canvasSize.set(width, height);
+    }
+
+    public pause() {
+        this.paused = true;
+    }
+
+    public resume() {
+        this.paused = false;
+    }
+
+    public togglePause() {
+        this.paused = !this.paused;
     }
 
     private checkVictoryOrDefeat() {
