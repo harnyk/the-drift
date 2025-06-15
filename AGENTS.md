@@ -129,9 +129,16 @@ React component that creates the `Game` once and attaches it to a `<canvas>`
 element. Uses `useEffect` with an empty dependency list so the game is not
 restarted on prop changes.
 
+#### `src/LayeredLayout.tsx`
+
+Full-screen container with the game canvas on the bottom layer and a
+transparent overlay for React UI. Shows a small "created by TheDrift team"
+label in the bottom-right corner.
+
 #### `src/App.tsx`
 
-Root React component. Renders `GameCanvas` and occupies the full page.
+Root React component. Renders `LayeredLayout` which hosts the game and UI
+layers.
 
 ---
 

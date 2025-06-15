@@ -1,8 +1,8 @@
 import React from 'react';
-import GameCanvas from './GameCanvas';
+import LayeredLayout from './LayeredLayout';
 
 const App: React.FC = () => {
-  return <GameCanvas />;
+  return <LayeredLayout />;
 };
 
 export default App;
