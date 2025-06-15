@@ -73,6 +73,7 @@ Maintains contact state between frames.
 
 Main game loop. Initializes objects, integrates physics, handles collisions, rendering and game state.
 **ENTRY POINT** for Codex understanding the system.
+Provides `resize(width, height)` to adjust canvas and viewport when the browser window size changes.
 
 #### `Block.ts`
 
@@ -113,12 +114,38 @@ Big enemy shape (a 5-gon). Follows the center of mass of all blocks using force.
 
 #### `src/main.tsx`
 
-Bootstraps game:
+Bootstraps React application. Renders `App` which includes the game canvas.
 
-```ts
-const game = new Game(canvas);
-game.start();
+```tsx
+ReactDOM.createRoot(document.getElementById('root') as HTMLElement).render(
+    <React.StrictMode>
+        <App />
+    </React.StrictMode>
+);
 ```
+
+#### `src/GameCanvas.tsx`
+
+React component that creates the `Game` once and attaches it to a `<canvas>`
+element. Uses `useEffect` with an empty dependency list so the game is not
+restarted on prop changes. Handles window resizing and updates the game's
+viewport via `Game.resize()`.
+
+#### `src/LayeredLayout.tsx`
+
+Generic full-screen layout that stacks an array of layers. Each layer is
+absolutely positioned. Includes a small "created by TheDrift team" label in
+the bottom-right corner.
+
+#### `src/UiOverlay.tsx`
+
+Transparent overlay used for React interface elements. Currently only displays
+a small debug label in the bottom-right corner.
+
+#### `src/App.tsx`
+
+Root React component. Renders `LayeredLayout` which hosts the game and UI
+layers.
 
 ---
 
