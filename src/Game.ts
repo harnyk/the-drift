@@ -258,6 +258,12 @@ export class Game {
         loop();
     }
 
+    public resize(width: number, height: number) {
+        this.canvas.width = width;
+        this.canvas.height = height;
+        this.viewport.canvasSize.set(width, height);
+    }
+
     private checkVictoryOrDefeat() {
         if (this.terroristGravityCenterAverager.count === 0) {
             this.gameState.win();
