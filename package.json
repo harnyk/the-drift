@@ -1,5 +1,5 @@
 {
-  "name": "vite-react-preview",
+  "name": "the-drift",
   "version": "0.0.1",
   "scripts": {
     "dev": "vite",
@@ -9,7 +9,7 @@
     "test": "jest",
     "typecheck": "tsc --noEmit"
   },
-  "homepage": "https://github.com/harnyk/race-game",
+  "homepage": "https://github.com/harnyk/the-drift",
   "dependencies": {
     "react": "^18.2.0",
     "react-dom": "^18.2.0",

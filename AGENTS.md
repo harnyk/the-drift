@@ -275,3 +275,15 @@ Use the format already present in AGENTS.md for consistency
 * Game loop is decoupled from rendering loop via `FixedTimestepIntegrator`.
 
 ---
+
+## Human Language Policy
+
+* All branches names are written in English
+* All code comments are written in English
+* All commit messages are written in English
+* All file names are written in English
+* All variable names are written in English
+* All function names are written in English
+* All class names are written in English
+
+---
