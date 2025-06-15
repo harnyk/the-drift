@@ -7,32 +7,41 @@ import { Game } from './Game';
  * always matches the browser size in pixels.
  */
 export const GameCanvas: React.FC = () => {
-  const canvasRef = useRef<HTMLCanvasElement | null>(null);
-  const gameRef = useRef<Game | null>(null);
+    const canvasRef = useRef<HTMLCanvasElement | null>(null);
+    const gameRef = useRef<Game | null>(null);
 
-  useEffect(() => {
-    const canvas = canvasRef.current;
-    if (!canvas || gameRef.current) return;
-
-    gameRef.current = new Game(canvas);
     const resize = () => {
-      const width = window.innerWidth;
-      const height = window.innerHeight;
-      canvas.width = width;
-      canvas.height = height;
-      gameRef.current?.resize(width, height);
+        const canvas = canvasRef.current;
+        const game = gameRef.current;
+        if (!canvas || !game) {
+            return;
+        }
+
+        const width = window.innerWidth;
+        const height = window.innerHeight;
+        canvas.width = width;
+        canvas.height = height;
+        gameRef.current!.resize(width, height);
     };
 
-    resize();
-    window.addEventListener('resize', resize);
-    gameRef.current.start();
+    useEffect(() => {
+        const canvas = canvasRef.current;
+        window.addEventListener('resize', resize);
+        if (!canvas || gameRef.current) {
+            return;
+        }
 
-    return () => {
-      window.removeEventListener('resize', resize);
-    };
-  }, []);
+        gameRef.current = new Game(canvas);
 
-  return <canvas ref={canvasRef} className="w-full h-full" />;
+        resize();
+        gameRef.current.start();
+
+        return () => {
+            window.removeEventListener('resize', resize);
+        };
+    }, []);
+
+    return <canvas ref={canvasRef} />;
 };
 
 export default GameCanvas;

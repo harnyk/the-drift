@@ -16,9 +16,6 @@ const LayeredLayout: React.FC<LayeredLayoutProps> = ({ layers }) => {
           {layer}
         </div>
       ))}
-      <div className="absolute bottom-0 right-0 p-1 text-xs text-gray-500 pointer-events-none" style={{ zIndex: layers.length }}>
-        created by TheDrift team
-      </div>
     </div>
   );
 };
