@@ -6,7 +6,11 @@ import { Game } from './Game';
  * across re-renders. Handles window resizing so the canvas
  * always matches the browser size in pixels.
  */
-export const GameCanvas: React.FC = () => {
+export interface GameCanvasProps {
+    paused: boolean;
+}
+
+export const GameCanvas: React.FC<GameCanvasProps> = ({ paused }) => {
     const canvasRef = useRef<HTMLCanvasElement | null>(null);
     const gameRef = useRef<Game | null>(null);
 
@@ -40,6 +44,16 @@ export const GameCanvas: React.FC = () => {
             window.removeEventListener('resize', resize);
         };
     }, []);
+
+    useEffect(() => {
+        const game = gameRef.current;
+        if (!game) return;
+        if (paused) {
+            game.pause();
+        } else {
+            game.resume();
+        }
+    }, [paused]);
 
     return <canvas ref={canvasRef} />;
 };
