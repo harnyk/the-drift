@@ -1,4 +1,4 @@
-# 🧐 AGENTS.md — Codex Developer Guide for The Drift
+# 🧐 AGENTS.md — Coding Agents Developer Guide for The Drift
 
 This file serves as a **knowledge base and coordination map** for Codex agents working on *The Drift*.
 It documents responsibilities of key modules and enforces consistency in developer operations.
