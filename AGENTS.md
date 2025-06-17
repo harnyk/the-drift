@@ -175,6 +175,7 @@ and tabbable. The provider tracks the id of the top dialog and exposes
 #### `src/ui/Dialog.tsx`
 
 Reusable dialog container component with a title, content area and close button.
+Uses `focus-trap-react` to keep focus inside the dialog when it is on top.
 
 ---
 
