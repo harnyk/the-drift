@@ -5,19 +5,21 @@ import { useDialogManager } from './DialogManager';
 
 export interface PauseMenuProps {
     onExit: () => void;
+    dialogId: number;
+    isTop: boolean;
 }
 
-const PauseMenu: React.FC<PauseMenuProps> = ({ onExit }) => {
+const PauseMenu: React.FC<PauseMenuProps> = ({ onExit, dialogId, isTop }) => {
     const { showDialog, closeDialog } = useDialogManager();
     const options = [
         {
             label: 'Show Dialog',
             onSelect: () => {
-                showDialog(
-                    <Dialog title="Hello" onClose={closeDialog}>
+                showDialog((id) => (
+                    <Dialog title="Hello" onClose={() => closeDialog(id)}>
                         hello world
                     </Dialog>
-                );
+                ));
             },
         },
         { label: 'Exit', onSelect: () => { console.log('Exit selected'); onExit(); } },
@@ -30,6 +32,7 @@ const PauseMenu: React.FC<PauseMenuProps> = ({ onExit }) => {
     }, [selected]);
 
     useEffect(() => {
+        if (!isTop) return;
         const onKeyDown = (e: KeyboardEvent) => {
             if (e.code === 'ArrowUp') {
                 e.preventDefault();
@@ -46,26 +49,23 @@ const PauseMenu: React.FC<PauseMenuProps> = ({ onExit }) => {
         return () => {
             window.removeEventListener('keydown', onKeyDown);
         };
-    }, [options, selected]);
+    }, [options, selected, isTop]);
 
     return (
-        <div className="flex items-center justify-center w-full h-full bg-black bg-opacity-50">
-            <div className="w-64 bg-gray-800 bg-opacity-90 rounded p-4 text-center">
-                <h2 className="text-red-600 font-mono text-xl mb-2">Menu</h2>
-                <h3 className="text-red-600 font-mono text-lg mb-4">The Drift</h3>
-                {options.map((opt, idx) => (
-                    <MenuOption
-                        key={opt.label}
-                        label={opt.label}
-                        onSelect={opt.onSelect}
-                        selected={idx === selected}
-                        buttonRef={(el: HTMLButtonElement | null) => {
-                            refs.current[idx] = el;
-                        }}
-                    />
-                ))}
-            </div>
-        </div>
+        <Dialog title="Menu" onClose={() => closeDialog(dialogId)}>
+            <h3 className="text-red-600 font-mono text-lg mb-4">The Drift</h3>
+            {options.map((opt, idx) => (
+                <MenuOption
+                    key={opt.label}
+                    label={opt.label}
+                    onSelect={opt.onSelect}
+                    selected={idx === selected}
+                    buttonRef={(el: HTMLButtonElement | null) => {
+                        refs.current[idx] = el;
+                    }}
+                />
+            ))}
+        </Dialog>
     );
 };
 
