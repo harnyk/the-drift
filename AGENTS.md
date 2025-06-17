@@ -149,7 +149,7 @@ a small debug label in the bottom-right corner.
 Pause menu overlay with "Menu" and "The Drift" titles. Renders a list of
 options via `MenuOption`. Supports keyboard navigation with arrow keys and
 selection with Enter or the mouse. Accepts an `onExit` callback to resume the
-game.
+game. Includes a "Show Dialog" option for manual dialog tests.
 
 #### `src/MenuOption.tsx`
 
@@ -159,8 +159,19 @@ default `MenuOption` React component.
 #### `src/App.tsx`
 
 Root React component. Renders `LayeredLayout` which hosts the game and UI
-layers. Handles `Escape` key to toggle the `PauseMenu` layer and passes the
+layers. Wrapped in `DialogProvider` to manage modal dialogs. Handles `Escape`
+key to toggle the `PauseMenu` layer when no dialogs are open and passes the
 pause state to `GameCanvas`.
+
+#### `src/ui/DialogManager.tsx`
+
+Context provider that maintains a stack of modal dialogs. Exports
+`DialogProvider` and `useDialogManager` for opening and closing dialogs with
+global `Escape` key support.
+
+#### `src/ui/Dialog.tsx`
+
+Reusable dialog container component with a title, content area and close button.
 
 ---
 

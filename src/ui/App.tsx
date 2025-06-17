@@ -2,13 +2,15 @@ import React, { useEffect, useState } from 'react';
 import LayeredLayout from './LayeredLayout';
 import GameCanvas from './GameCanvas';
 import PauseMenu from './PauseMenu';
+import { DialogProvider, useDialogManager } from './DialogManager';
 
-const App: React.FC = () => {
+const InnerApp: React.FC = () => {
     const [paused, setPaused] = useState(false);
+    const { hasDialog } = useDialogManager();
 
     useEffect(() => {
         const onKeyDown = (e: KeyboardEvent) => {
-            if (e.code === 'Escape') {
+            if (e.code === 'Escape' && !hasDialog) {
                 setPaused((p) => !p);
             }
         };
@@ -16,7 +18,7 @@ const App: React.FC = () => {
         return () => {
             window.removeEventListener('keydown', onKeyDown);
         };
-    }, []);
+    }, [hasDialog]);
 
     const layers: React.ReactNode[] = [
         <GameCanvas key="game" paused={paused} />,
@@ -27,5 +29,11 @@ const App: React.FC = () => {
 
     return <LayeredLayout layers={layers} />;
 };
+
+const App: React.FC = () => (
+    <DialogProvider>
+        <InnerApp />
+    </DialogProvider>
+);
 
 export default App;

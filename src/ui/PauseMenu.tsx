@@ -1,15 +1,25 @@
 import React, { useEffect, useRef, useState } from 'react';
 import MenuOption from './MenuOption';
+import Dialog from './Dialog';
+import { useDialogManager } from './DialogManager';
 
 export interface PauseMenuProps {
     onExit: () => void;
 }
 
 const PauseMenu: React.FC<PauseMenuProps> = ({ onExit }) => {
+    const { showDialog, closeDialog } = useDialogManager();
     const options = [
-        // { label: 'Option 1', onSelect: () => console.log('Option 1 selected') },
-        // { label: 'Option 2', onSelect: () => console.log('Option 2 selected') },
-        // { label: 'Option 3', onSelect: () => console.log('Option 3 selected') },
+        {
+            label: 'Show Dialog',
+            onSelect: () => {
+                showDialog(
+                    <Dialog title="Hello" onClose={closeDialog}>
+                        hello world
+                    </Dialog>
+                );
+            },
+        },
         { label: 'Exit', onSelect: () => { console.log('Exit selected'); onExit(); } },
     ];
     const [selected, setSelected] = useState(0);
