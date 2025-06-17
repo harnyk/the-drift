@@ -146,8 +146,15 @@ a small debug label in the bottom-right corner.
 
 #### `src/PauseMenu.tsx`
 
-Simple overlay shown when the game is paused. Currently renders an empty box
-centered on the screen.
+Pause menu overlay with "Menu" and "The Drift" titles. Renders a list of
+options via `MenuOption`. Supports keyboard navigation with arrow keys and
+selection with Enter or the mouse. Accepts an `onExit` callback to resume the
+game.
+
+#### `src/MenuOption.tsx`
+
+Reusable button component for menu entries. Exports `MenuOptionProps` and the
+default `MenuOption` React component.
 
 #### `src/App.tsx`
 
@@ -287,3 +294,7 @@ Use the format already present in AGENTS.md for consistency
 * All class names are written in English
 
 ---
+
+## Package Manager Policy
+
+* Use PNPM for package management
