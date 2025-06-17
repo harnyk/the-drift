@@ -7,9 +7,9 @@ export interface PauseMenuProps {
 
 const PauseMenu: React.FC<PauseMenuProps> = ({ onExit }) => {
     const options = [
-        { label: 'Option 1', onSelect: () => console.log('Option 1 selected') },
-        { label: 'Option 2', onSelect: () => console.log('Option 2 selected') },
-        { label: 'Option 3', onSelect: () => console.log('Option 3 selected') },
+        // { label: 'Option 1', onSelect: () => console.log('Option 1 selected') },
+        // { label: 'Option 2', onSelect: () => console.log('Option 2 selected') },
+        // { label: 'Option 3', onSelect: () => console.log('Option 3 selected') },
         { label: 'Exit', onSelect: () => { console.log('Exit selected'); onExit(); } },
     ];
     const [selected, setSelected] = useState(0);

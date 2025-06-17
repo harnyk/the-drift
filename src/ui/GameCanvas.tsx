@@ -1,5 +1,5 @@
 import React, { useEffect, useRef } from 'react';
-import { Game } from './Game';
+import { Game } from '../game/Game';
 
 /**
  * React wrapper that mounts the Game once and keeps it running

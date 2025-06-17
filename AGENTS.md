@@ -294,3 +294,7 @@ Use the format already present in AGENTS.md for consistency
 * All class names are written in English
 
 ---
+
+## Package Manager Policy
+
+* Use PNPM for package management
