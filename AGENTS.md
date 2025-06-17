@@ -146,16 +146,16 @@ a small debug label in the bottom-right corner.
 
 #### `src/PauseMenu.tsx`
 
-Pause menu dialog built on top of the generic `Dialog` component. Renders a
-list of options via `MenuOption`. Keyboard navigation only works when the menu
-is the top dialog in the stack. Provides a "Show Dialog" option for manual
-tests and accepts an `onExit` callback used to close the dialog and resume the
-game.
+Pause menu dialog built on top of the generic `Dialog` component. Options are
+standard buttons navigated via the browser's focus order. The first option is
+focused automatically when the menu is the top dialog. Provides a "Show Dialog"
+option for manual tests and accepts an `onExit` callback used to close the
+dialog and resume the game.
 
 #### `src/MenuOption.tsx`
 
-Reusable button component for menu entries. Exports `MenuOptionProps` and the
-default `MenuOption` React component.
+Reusable button component for menu entries. Accepts an `isTop` flag to enable
+focus with the Tab key only for the top dialog.
 
 #### `src/App.tsx`
 
@@ -167,9 +167,10 @@ the pause state is updated via the dialog's `onClose` callback.
 #### `src/ui/DialogManager.tsx`
 
 Context provider that maintains a stack of modal dialogs. `showDialog` accepts a
-render function and returns a unique dialog id. The provider tracks the id of
-the top dialog and exposes `closeDialog`, `useDialogManager`, and
-`useIsTopDialog` helpers with global `Escape` key support.
+render function and returns a unique dialog id. Only the top dialog is visible
+and tabbable. The provider tracks the id of the top dialog and exposes
+`closeDialog`, `useDialogManager`, and `useIsTopDialog` helpers with global
+`Escape` key support.
 
 #### `src/ui/Dialog.tsx`
 

@@ -69,15 +69,21 @@ export const DialogProvider: React.FC<{ children: React.ReactNode }> = ({ childr
     return (
         <Context.Provider value={{ showDialog, closeDialog, hasDialog: stack.length > 0, topId }}>
             {children}
-            {stack.map((entry, idx) => (
-                <div
-                    key={entry.id}
-                    className="absolute inset-0 flex items-center justify-center bg-black bg-opacity-50"
-                    style={{ zIndex: 100 + idx }}
-                >
-                    {entry.render(entry.id, idx === stack.length - 1)}
-                </div>
-            ))}
+            {stack.map((entry, idx) => {
+                const isTop = idx === stack.length - 1;
+                return (
+                    <div
+                        key={entry.id}
+                        className={
+                            'absolute inset-0 flex items-center justify-center bg-black bg-opacity-50' +
+                            (isTop ? '' : ' hidden')
+                        }
+                        style={{ zIndex: 100 + idx }}
+                    >
+                        {entry.render(entry.id, isTop)}
+                    </div>
+                );
+            })}
         </Context.Provider>
     );
 };
