@@ -1,12 +1,14 @@
 import { Renderable } from '../../engine/Renderable';
 import { Viewport } from '../../engine/Viewport';
 import { Vec2D } from '../../engine/vec/Vec2D';
+import { Node } from '../../engine/Node';
 
-export class CompassRenderable implements Renderable {
+export class CompassRenderable extends Node implements Renderable {
     size: number;
     #viewportCenter: Vec2D = new Vec2D();
 
     constructor(size = 50) {
+        super();
         this.size = size;
     }
 

@@ -1,9 +1,12 @@
 import { Renderable } from '../../../src/engine/Renderable';
 import { Viewport } from '../../../src/engine/Viewport';
 import { GameStateManager } from '../GameStateManager';
+import { Node } from '../../../src/engine/Node';
 
-export class GameStateOverlayRenderable implements Renderable {
-    constructor(private readonly stateManager: GameStateManager) {}
+export class GameStateOverlayRenderable extends Node implements Renderable {
+    constructor(private readonly stateManager: GameStateManager) {
+        super();
+    }
 
     render(ctx: CanvasRenderingContext2D, viewport: Viewport): void {
         if (this.stateManager.isPlaying()) return;

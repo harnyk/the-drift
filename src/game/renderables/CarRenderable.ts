@@ -1,8 +1,9 @@
 import { Renderable } from '../../engine/Renderable';
 import { IVec2D } from '../../engine/vec/IVec2D';
 import { Vec2D } from '../../engine/vec/Vec2D';
+import { Node } from '../../engine/Node';
 
-export class CarRenderable implements Renderable {
+export class CarRenderable extends Node implements Renderable {
     readonly position: Vec2D = new Vec2D();
     angle: number;
 
@@ -16,6 +17,7 @@ export class CarRenderable implements Renderable {
     #wheelSize = Vec2D.set(new Vec2D(), 0.2, 0.1).toImmutable();
 
     constructor(position: IVec2D, angle = 0) {
+        super();
         this.position.assign(position);
         this.angle = angle;
     }

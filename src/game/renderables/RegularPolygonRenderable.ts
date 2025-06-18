@@ -2,8 +2,9 @@ import { Renderable } from '../../engine/Renderable';
 import { Viewport } from '../../engine/Viewport';
 import { IVec2D } from '../../engine/vec/IVec2D';
 import { Vec2D } from '../../engine/vec/Vec2D';
+import { Node } from '../../engine/Node';
 
-export class RegularPolygonRenderable implements Renderable {
+export class RegularPolygonRenderable extends Node implements Renderable {
     readonly position = new Vec2D();
     radius: number;
     sides: number;
@@ -23,6 +24,7 @@ export class RegularPolygonRenderable implements Renderable {
         angle?: number;
         color?: string;
     }) {
+        super();
         this.position.assign(position);
         this.radius = radius;
         this.sides = sides;

@@ -1,11 +1,13 @@
 import { Renderable } from '../../engine/Renderable';
 import { Viewport } from '../../engine/Viewport';
 import { RigidBody2D } from '../../engine/physics/RigidBody2D';
+import { Node } from '../../engine/Node';
 
-export class SpeedometerRenderable implements Renderable {
+export class SpeedometerRenderable extends Node implements Renderable {
     private body: RigidBody2D;
 
     constructor(body: RigidBody2D) {
+        super();
         this.body = body;
     }
 

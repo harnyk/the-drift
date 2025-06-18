@@ -21,9 +21,13 @@ Runs game logic at fixed intervals (e.g. 60fps), regardless of rendering framera
 
 Camera system. Translates between world and screen coordinates. Handles zoom, pan, and rotation.
 
+#### `Node.ts`
+
+Base class for all game objects. Supports parent/child hierarchy, automatic update traversal and world lifecycle hooks.
+
 #### `World.ts`
 
-Contains and renders all `Renderable` objects. Central rendering loop iterates over them.
+Root scene graph node. Owns a `BindingManager` and traverses child `Node`s each frame calling `update` and `render` if available.
 
 #### `WorldRenderer.ts`
 
@@ -36,6 +40,18 @@ Wraps canvas context and renders a `World`.
 #### `Vec2D.ts`, `IVec2D.ts`
 
 2D vector math. `Vec2D` is mutable, `IVec2D` is interface.
+
+#### `BindingManager.ts`
+
+Stores and updates declarative bindings each frame. Bindings are removed automatically when their target node leaves the world.
+
+#### `bindVec2.ts`, `bindScalar.ts`
+
+Helpers to create bindings that synchronize vector and scalar properties between objects.
+
+#### `Updatable.ts`
+
+Marker interface for objects that expose an `update(dt)` method.
 
 ---
 
