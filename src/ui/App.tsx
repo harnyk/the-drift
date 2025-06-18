@@ -2,30 +2,43 @@ import React, { useEffect, useState } from 'react';
 import LayeredLayout from './LayeredLayout';
 import GameCanvas from './GameCanvas';
 import PauseMenu from './PauseMenu';
+import { DialogProvider, useDialogManager } from './DialogManager';
 
-const App: React.FC = () => {
+const InnerApp: React.FC = () => {
     const [paused, setPaused] = useState(false);
+    const { hasDialog, showDialog, closeDialog } = useDialogManager();
 
     useEffect(() => {
         const onKeyDown = (e: KeyboardEvent) => {
-            if (e.code === 'Escape') {
-                setPaused((p) => !p);
+            if (e.code === 'Escape' && !hasDialog) {
+                setPaused(true);
+                showDialog(
+                    (id, isTop) => (
+                        <PauseMenu
+                            dialogId={id}
+                            isTop={isTop}
+                            onExit={() => closeDialog(id)}
+                        />
+                    ),
+                    () => setPaused(false)
+                );
             }
         };
         window.addEventListener('keydown', onKeyDown);
         return () => {
             window.removeEventListener('keydown', onKeyDown);
         };
-    }, []);
+    }, [hasDialog, showDialog, closeDialog]);
 
-    const layers: React.ReactNode[] = [
-        <GameCanvas key="game" paused={paused} />,
-    ];
-    if (paused) {
-        layers.push(<PauseMenu key="pause" onExit={() => setPaused(false)} />);
-    }
-
-    return <LayeredLayout layers={layers} />;
+    return (
+        <LayeredLayout layers={[<GameCanvas key="game" paused={paused} />]} />
+    );
 };
+
+const App: React.FC = () => (
+    <DialogProvider>
+        <InnerApp />
+    </DialogProvider>
+);
 
 export default App;

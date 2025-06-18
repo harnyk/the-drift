@@ -12,6 +12,7 @@
   "homepage": "https://github.com/harnyk/the-drift",
   "dependencies": {
     "clsx": "^2.1.1",
+    "focus-trap-react": "^11.0.4",
     "react": "^18.2.0",
     "react-dom": "^18.2.0",
     "vercel": "^42.3.0"

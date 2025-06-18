@@ -146,21 +146,36 @@ a small debug label in the bottom-right corner.
 
 #### `src/PauseMenu.tsx`
 
-Pause menu overlay with "Menu" and "The Drift" titles. Renders a list of
-options via `MenuOption`. Supports keyboard navigation with arrow keys and
-selection with Enter or the mouse. Accepts an `onExit` callback to resume the
-game.
+Pause menu dialog built on top of the generic `Dialog` component. Options are
+standard buttons navigated via the browser's focus order. The first option is
+focused automatically when the menu is the top dialog. Provides a "Show Dialog"
+option for manual tests and accepts an `onExit` callback used to close the
+dialog and resume the game.
 
 #### `src/MenuOption.tsx`
 
-Reusable button component for menu entries. Exports `MenuOptionProps` and the
-default `MenuOption` React component.
+Reusable button component for menu entries. Accepts an `isTop` flag to enable
+focus with the Tab key only for the top dialog.
 
 #### `src/App.tsx`
 
-Root React component. Renders `LayeredLayout` which hosts the game and UI
-layers. Handles `Escape` key to toggle the `PauseMenu` layer and passes the
-pause state to `GameCanvas`.
+Root React component. Renders `LayeredLayout` with the `GameCanvas` and wraps
+everything in `DialogProvider`. Pressing `Escape` opens the `PauseMenu` dialog
+when no dialogs are active. The provider closes the top dialog on `Escape` and
+the pause state is updated via the dialog's `onClose` callback.
+
+#### `src/ui/DialogManager.tsx`
+
+Context provider that maintains a stack of modal dialogs. `showDialog` accepts a
+render function and returns a unique dialog id. Only the top dialog is visible
+and tabbable. The provider tracks the id of the top dialog and exposes
+`closeDialog`, `useDialogManager`, and `useIsTopDialog` helpers with global
+`Escape` key support.
+
+#### `src/ui/Dialog.tsx`
+
+Reusable dialog container component with a title, content area and close button.
+Uses `focus-trap-react` to keep focus inside the dialog when it is on top.
 
 ---
 
