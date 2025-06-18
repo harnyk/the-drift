@@ -47,7 +47,7 @@ export class Node {
         if (this.parent) {
             return this.parent.getWorld();
         }
-        return (this as unknown) as World;
+        return null;
     }
 
     registerBinding(binding: Binding): void {

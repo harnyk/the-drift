@@ -11,6 +11,10 @@ export class World extends Node {
         super();
     }
 
+    getWorld(): World {
+        return this;
+    }
+
     addBinding(binding: Binding): void {
         this.bindingManager.add(binding);
     }

@@ -49,6 +49,10 @@ Stores and updates declarative bindings each frame. Bindings are removed automat
 
 Helpers to create bindings that synchronize vector and scalar properties between objects.
 
+#### `Renderable.ts`
+
+Marker interface for objects that expose a `render(ctx, viewport)` method.
+
 #### `Updatable.ts`
 
 Marker interface for objects that expose an `update(dt)` method.
