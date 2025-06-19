@@ -177,12 +177,26 @@ dialog and resume the game.
 Reusable button component for menu entries. Accepts an `isTop` flag to enable
 focus with the Tab key only for the top dialog.
 
-#### `src/App.tsx`
+#### `src/ui/App.tsx`
 
-Root React component. Renders `LayeredLayout` with the `GameCanvas` and wraps
-everything in `DialogProvider`. Pressing `Escape` opens the `PauseMenu` dialog
-when no dialogs are active. The provider closes the top dialog on `Escape` and
-the pause state is updated via the dialog's `onClose` callback.
+Top-level React component that configures routing via `react-router-dom`.
+Defines two routes:
+
+* `/` — renders `GameApp`
+* `/about` — renders `AboutPage`
+
+Uses `BrowserRouter` and `Routes` from `react-router-dom`.
+
+#### `src/ui/GameApp.tsx`
+
+Encapsulates the original game UI. Wraps `LayeredLayout` with `GameCanvas`
+inside `DialogProvider`. Handles the `Escape` key to open the `PauseMenu`
+dialog and toggles the paused state when dialogs are shown.
+
+#### `src/ui/AboutPage.tsx`
+
+Simple page containing a centered `<h1>` heading with the project title
+"The Drift".
 
 #### `src/ui/DialogManager.tsx`
 
