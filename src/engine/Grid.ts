@@ -1,8 +1,9 @@
 import { Renderable } from '../engine/Renderable';
 import { Viewport } from '../engine/Viewport';
 import { Context } from './Context';
+import { Node } from './Node';
 
-export class Grid implements Renderable {
+export class Grid extends Node implements Renderable {
     spacing: number;
     color: string;
 
@@ -11,6 +12,7 @@ export class Grid implements Renderable {
         spacing = 1,
         color = '#ddd'
     ) {
+        super();
         this.spacing = spacing;
         this.color = color;
     }

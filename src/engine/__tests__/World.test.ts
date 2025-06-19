@@ -2,8 +2,9 @@ import { World } from '../World';
 import { Renderable } from '../Renderable';
 import { Viewport } from '../Viewport';
 import { Context } from '../Context';
+import { Node } from '../Node';
 
-class Dummy implements Renderable {
+class Dummy extends Node implements Renderable {
     render(_ctx: CanvasRenderingContext2D, _vp: Viewport) {}
 }
 
@@ -19,10 +20,11 @@ describe('World', () => {
         const world = new World(fakeContext);
         const a = new Dummy();
         const b = new Dummy();
-        world.addMany([a, b]);
+        world.add(a);
+        world.add(b);
         world.remove(a);
-        expect(world.objects).toEqual([b]);
-        world.removeMany([b]);
-        expect(world.objects).toEqual([]);
+        expect(world.getChildren()).toEqual([b]);
+        world.remove(b);
+        expect(world.getChildren()).toEqual([]);
     });
 });

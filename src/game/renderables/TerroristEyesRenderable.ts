@@ -3,8 +3,9 @@ import { Viewport } from '../../engine/Viewport';
 import { RigidBody2D } from '../../engine/physics/RigidBody2D';
 import { Vec2D } from '../../engine/vec/Vec2D';
 import { Context } from '../../engine/Context';
+import { Node } from '../../engine/Node';
 
-export class TerroristEyesRenderable implements Renderable {
+export class TerroristEyesRenderable extends Node implements Renderable {
     static readonly polygonSides = 5;
     static readonly polygonRadius = 2.8;
     static readonly eyeSpacing = 1;
@@ -22,7 +23,9 @@ export class TerroristEyesRenderable implements Renderable {
     constructor(
         private readonly context: Context,
         private readonly terroristBody: RigidBody2D
-    ) {}
+    ) {
+        super();
+    }
 
     render(ctx: CanvasRenderingContext2D, viewport: Viewport): void {
         const tPos = this.terroristBody.position;

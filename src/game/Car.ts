@@ -5,8 +5,11 @@ import { RigidBody2D } from '../engine/physics/RigidBody2D';
 import { Vec2D } from '../engine/vec/Vec2D';
 import { CarRenderable } from './renderables/CarRenderable';
 import { VehicleController } from './VehicleController';
+import { Node } from '../engine/Node';
+import { bindVec2 } from '../engine/bindVec2';
+import { bindScalar } from '../engine/bindScalar';
 
-export class Car {
+export class Car extends Node {
     readonly body: RigidBody2D;
     readonly controller: VehicleController;
     readonly renderable: CarRenderable;
@@ -17,9 +20,12 @@ export class Car {
         initialPosition: Vec2D,
         initialRotation = 0
     ) {
+        super();
         this.body = new RigidBody2D(initialPosition, initialRotation, 1, 0.1);
 
         this.renderable = new CarRenderable(this.body.position);
+        bindVec2(this.renderable, 'position').from(this.body, 'position');
+        bindScalar(this.renderable, 'angle').from(this.body, 'angle');
 
         this.controller = new VehicleController(this.body);
         this.controller.setFriction(0.3);
@@ -39,8 +45,6 @@ export class Car {
     }
 
     update(dt: number) {
-        this.renderable.position.assign(this.body.position);
-        this.renderable.angle = this.body.angle;
         this.collider.position.assign(this.body.position);
         this.collider.angle = this.body.angle;
 

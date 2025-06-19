@@ -4,8 +4,11 @@ import { RigidBody2D } from '../engine/physics/RigidBody2D';
 import { Vec2D } from '../engine/vec/Vec2D';
 import { Vec2DAverager } from '../engine/Vec2DAverager';
 import { RegularPolygonRenderable } from './renderables/RegularPolygonRenderable';
+import { Node } from '../engine/Node';
+import { bindVec2 } from '../engine/bindVec2';
+import { bindScalar } from '../engine/bindScalar';
 
-export class Terrorist {
+export class Terrorist extends Node {
     private static readonly RADIUS = 3;
     private static readonly SIDES = 5;
     private static readonly MASS = 5;
@@ -27,6 +30,16 @@ export class Terrorist {
         angle = 0,
         private readonly averageTarget: Vec2DAverager
     ) {
+        super();
+
+        this.body = new RigidBody2D(
+            position,
+            angle,
+            Terrorist.MASS,
+            Terrorist.MOMENT_OF_INERTIA
+        );
+        this.body.applyTorque(Terrorist.INITIAL_TORQUE);
+
         this.renderable = new RegularPolygonRenderable({
             position,
             radius: Terrorist.RADIUS,
@@ -34,6 +47,8 @@ export class Terrorist {
             angle: angle,
             color: '#333',
         });
+        bindVec2(this.renderable, 'position').from(this.body, 'position');
+        bindScalar(this.renderable, 'angle').from(this.body, 'angle');
 
         this.collider = new RegularPolygonCollisionBody(
             this.context,
@@ -43,14 +58,6 @@ export class Terrorist {
             angle,
             'dynamic'
         );
-
-        this.body = new RigidBody2D(
-            position,
-            angle,
-            Terrorist.MASS,
-            Terrorist.MOMENT_OF_INERTIA
-        );
-        this.body.applyTorque(Terrorist.INITIAL_TORQUE);
     }
 
     update(dt: number) {
@@ -65,8 +72,6 @@ export class Terrorist {
             this.#timeAccumulator = 0;
         }
 
-        this.renderable.position.assign(this.body.position);
-        this.renderable.angle = this.body.angle;
         this.collider.position.assign(this.body.position);
         this.collider.angle = this.body.angle;
         this.body.update(dt);

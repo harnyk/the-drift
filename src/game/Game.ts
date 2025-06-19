@@ -7,6 +7,7 @@ import { Vec2DAverager } from '../engine/Vec2DAverager';
 import { Viewport } from '../engine/Viewport';
 import { World } from '../engine/World';
 import { WorldRenderer } from '../engine/WorldRenderer';
+import { bindVec2 } from '../engine/bindVec2';
 import { Block } from './Block';
 import { Car } from './Car';
 import { KeyboardControl, KeyCodeWASD } from './controls/KeyboardControl';
@@ -116,6 +117,10 @@ export class Game {
             this.context,
             this.terrorist.body
         );
+        bindVec2(this.terroristEyes, 'targetPosition').from(
+            this.car.body,
+            'position'
+        );
     }
 
     private initCollisionDetector(roadBlocks: Block[]) {
@@ -167,9 +172,6 @@ export class Game {
         });
     }
 
-    private updateTerroristEyesReaction(_dt: number) {
-        this.terroristEyes.targetPosition.assign(this.car.body.position);
-    }
 
     private initCarAndTerrorist() {
         this.car = new Car(
@@ -203,7 +205,9 @@ export class Game {
         grid.setGravityWell(this.terrorist.body.position);
         this.world.add(grid);
 
-        this.world.addMany(blocks.map((b) => b.renderable));
+        for (const b of blocks) {
+            this.world.add(b.renderable);
+        }
 
         this.world.add(this.car.renderable);
         this.world.add(this.terrorist.renderable);
@@ -246,7 +250,7 @@ export class Game {
 
                     this.car.update(dt);
                     this.terrorist.update(dt);
-                    this.updateTerroristEyesReaction(dt);
+                    this.world.update(dt);
                     this.checkVictoryOrDefeat();
                 });
             } else {

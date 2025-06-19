@@ -1,32 +1,45 @@
 import { Context } from './Context';
+import { BindingManager, Binding } from './BindingManager';
+import { Node } from './Node';
 import { Renderable } from './Renderable';
 import { Viewport } from './Viewport';
 
-export class World {
-    objects: Renderable[] = [];
+export class World extends Node {
+    readonly bindingManager = new BindingManager();
 
-    constructor(private readonly context: Context) {}
-
-    add(obj: Renderable) {
-        this.objects.push(obj);
+    constructor(private readonly context: Context) {
+        super();
     }
 
-    addMany(objs: Renderable[]) {
-        this.objects.push(...objs);
+    getWorld(): World {
+        return this;
     }
 
-    remove(obj: Renderable) {
-        const index = this.objects.indexOf(obj);
-        if (index >= 0) this.objects.splice(index, 1);
+    addBinding(binding: Binding): void {
+        this.bindingManager.add(binding);
     }
 
-    removeMany(objs: Renderable[]) {
-        for (const obj of objs) this.remove(obj);
+    removeBindingsForTarget(target: unknown): void {
+        this.bindingManager.removeBindingsForTarget(target);
     }
 
-    render(ctx: CanvasRenderingContext2D, viewport: Viewport) {
-        for (const obj of this.objects) {
-            obj.render(ctx, viewport);
+    update(dt: number): void {
+        this.bindingManager.update();
+        super.update(dt);
+    }
+
+    render(ctx: CanvasRenderingContext2D, viewport: Viewport): void {
+        for (const child of this.getChildren()) {
+            this.renderNode(child, ctx, viewport);
+        }
+    }
+
+    private renderNode(node: Node, ctx: CanvasRenderingContext2D, viewport: Viewport): void {
+        if (typeof (node as unknown as Renderable).render === 'function') {
+            (node as unknown as Renderable).render(ctx, viewport);
+        }
+        for (const child of node.getChildren()) {
+            this.renderNode(child, ctx, viewport);
         }
     }
 }

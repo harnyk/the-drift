@@ -3,13 +3,16 @@ import { Renderable } from '../../engine/Renderable';
 import { Viewport } from '../../engine/Viewport';
 import { RigidBody2D } from '../../engine/physics/RigidBody2D';
 import { Vec2D } from '../../engine/vec/Vec2D';
+import { Node } from '../../engine/Node';
 
-export class TerroristIndicatorRenderable implements Renderable {
+export class TerroristIndicatorRenderable extends Node implements Renderable {
     constructor(
         private readonly context: Context,
         private readonly carBody: RigidBody2D,
         private readonly terroristBody: RigidBody2D
-    ) {}
+    ) {
+        super();
+    }
 
     private readonly baseLength = 20;
     private readonly baseThickness = 4;

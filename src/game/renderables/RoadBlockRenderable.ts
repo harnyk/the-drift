@@ -3,8 +3,9 @@ import { Viewport } from '../../engine/Viewport';
 import { Vec2D } from '../../engine/vec/Vec2D';
 import { IVec2D } from '../../engine/vec/IVec2D';
 import { Context } from '../../engine/Context';
+import { Node } from '../../engine/Node';
 
-export class RoadBlockRenderable implements Renderable {
+export class RoadBlockRenderable extends Node implements Renderable {
     readonly position = new Vec2D();
     readonly size = new Vec2D();
     angle: number;
@@ -23,6 +24,7 @@ export class RoadBlockRenderable implements Renderable {
             color?: string;
         }
     ) {
+        super();
         this.position.assign(position);
         this.size.assign(size);
         this.angle = angle;

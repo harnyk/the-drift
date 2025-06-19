@@ -2,14 +2,16 @@ import { Renderable } from '../../engine/Renderable';
 import { Viewport } from '../../engine/Viewport';
 import { Context } from '../../engine/Context';
 import { ImmutableVec2D } from '../../engine/vec/Vec2D';
+import { Node } from '../../engine/Node';
 
-export class CurvedGrid implements Renderable {
+export class CurvedGrid extends Node implements Renderable {
     spacing: number;
     color: string;
 
     private gravityWell: ImmutableVec2D | null = null;
 
     constructor(private readonly context: Context, spacing = 1, color: string) {
+        super();
         this.spacing = spacing;
         this.color = color;
     }
