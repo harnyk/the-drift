@@ -1,59 +1,6 @@
-import { bindVec2 } from '../engine/bindVec2';
 import { BaseGame } from '../common/BaseGame';
 import { Grid } from '../engine/Grid';
-import { Node } from '../engine/Node';
-import { RigidBody2D } from '../engine/physics/RigidBody2D';
-import { Vec2D } from '../engine/vec/Vec2D';
-import { Viewport } from '../engine/Viewport';
-
-class PlanetRenderable extends Node {
-    constructor(
-        public readonly color: string = 'red',
-        public readonly mass = 1,
-        public readonly radius = 1
-    ) {
-        super();
-    }
-
-    public readonly position = new Vec2D();
-
-    render(ctx: CanvasRenderingContext2D, viewport: Viewport) {
-        ctx.save();
-
-        ctx.translate(this.position.x, this.position.y);
-        ctx.beginPath();
-        ctx.arc(0, 0, this.radius, 0, 2 * Math.PI);
-        ctx.fillStyle = this.color;
-        ctx.fill();
-
-        ctx.restore();
-    }
-}
-
-class Planet extends Node {
-    body: RigidBody2D;
-    renderable: PlanetRenderable;
-    constructor(
-        public readonly options: {
-            color: string;
-            radius: number;
-            mass: number;
-        }
-    ) {
-        super();
-        this.body = new RigidBody2D(new Vec2D(), 0, options.mass, 0);
-        this.renderable = new PlanetRenderable(
-            this.options.color,
-            options.mass,
-            options.radius
-        );
-
-        this.add(this.renderable);
-        this.add(this.body);
-
-        bindVec2(this.renderable, 'position').from(this.body, 'position');
-    }
-}
+import { Planet } from './Planet';
 
 export class ThreeBodiesGame extends BaseGame {
     private grid = new Grid(this.context, 10);
@@ -73,7 +20,7 @@ export class ThreeBodiesGame extends BaseGame {
     }
 
     public generateRandomPlanets() {
-        for (let i = 0; i < 70; i++) {
+        for (let i = 0; i < 100; i++) {
             const mass = 2 ** (Math.random() * 4 + 0.3);
             const colorRed = Math.random() * 255;
             const colorGreen = Math.random() * 255;
@@ -98,7 +45,6 @@ export class ThreeBodiesGame extends BaseGame {
             })
         );
     }
-
 
     private applyGravity(planets: Planet[]) {
         this.context.vectorPool.borrow((acquire) => {
@@ -131,7 +77,9 @@ export class ThreeBodiesGame extends BaseGame {
 
     private updateViewportToFit(planets: Planet[]) {
         this.context.vectorPool.borrow((acquire) => {
-            const gamma = 1.5; // чувствительность к массе
+            // Exponent of mass
+            const gamma = 2;
+
             const weightedCenter = acquire();
             weightedCenter.zero();
 
@@ -144,7 +92,7 @@ export class ThreeBodiesGame extends BaseGame {
             }
             weightedCenter.scale(1 / totalWeight);
 
-            // Оценим "значимость" тел для попадания в фокус
+            // Evaluate "importance" of bodies for focus
             const weighted = planets.map((p) => {
                 const dx = p.body.position.x - weightedCenter.x;
                 const dy = p.body.position.y - weightedCenter.y;
@@ -155,7 +103,9 @@ export class ThreeBodiesGame extends BaseGame {
 
             weighted.sort((a, b) => b.weight - a.weight);
 
-            const coreCount = Math.floor(planets.length * 0.1);
+            // const coreCount = Math.floor(planets.length * 0.1);
+            // Number of most interesting planets
+            const coreCount = 6
             const core = weighted.slice(0, coreCount).map((e) => e.planet);
 
             const bounds = {
@@ -189,7 +139,9 @@ export class ThreeBodiesGame extends BaseGame {
             const zoomY = canvasHeight / height;
             const targetZoom = Math.min(zoomX, zoomY);
 
-            const alpha = 0.05;
+            // Camera inertion
+            const alpha = 0.02;
+
             this.viewport.center.x += (cx - this.viewport.center.x) * alpha;
             this.viewport.center.y += (cy - this.viewport.center.y) * alpha;
             this.viewport.zoom += (targetZoom - this.viewport.zoom) * alpha;
