@@ -1,13 +1,10 @@
 import { bindVec2 } from '../engine/bindVec2';
-import { Context } from '../engine/Context';
-import { FixedTimestepIntegrator } from '../engine/FixedTimestepIntegrator';
+import { BaseGame } from '../common/BaseGame';
 import { Grid } from '../engine/Grid';
 import { Node } from '../engine/Node';
 import { RigidBody2D } from '../engine/physics/RigidBody2D';
 import { Vec2D } from '../engine/vec/Vec2D';
 import { Viewport } from '../engine/Viewport';
-import { World } from '../engine/World';
-import { WorldRenderer } from '../engine/WorldRenderer';
 
 class PlanetRenderable extends Node {
     constructor(
@@ -58,27 +55,13 @@ class Planet extends Node {
     }
 }
 
-export class ThreeBodiesGame {
-    private context = new Context();
-    private renderer: WorldRenderer;
-    private canvas: HTMLCanvasElement;
-    private viewport: Viewport;
-    private world = new World(this.context);
-    private integrator = new FixedTimestepIntegrator(60);
+export class ThreeBodiesGame extends BaseGame {
     private grid = new Grid(this.context, 10);
 
     private planets: Planet[] = [];
 
-    private setupCanvasSize() {
-        this.canvas.width = document.body.clientWidth;
-        this.canvas.height = document.body.clientHeight;
-    }
-
     constructor(canvas: HTMLCanvasElement) {
-        this.canvas = canvas;
-        this.setupCanvasSize();
-        this.viewport = this.createViewport();
-        this.renderer = this.createRenderer();
+        super(canvas);
 
         this.world.add(this.grid);
 
@@ -116,22 +99,6 @@ export class ThreeBodiesGame {
         );
     }
 
-    private createViewport(): Viewport {
-        return new Viewport(
-            this.context,
-            Vec2D.set(new Vec2D(), 0, 0),
-            50,
-            Vec2D.set(new Vec2D(), this.canvas.width, this.canvas.height)
-        );
-    }
-
-    private createRenderer(): WorldRenderer {
-        return new WorldRenderer(
-            this.context,
-            this.canvas.getContext('2d')!,
-            this.viewport
-        );
-    }
 
     private applyGravity(planets: Planet[]) {
         this.context.vectorPool.borrow((acquire) => {
@@ -229,7 +196,7 @@ export class ThreeBodiesGame {
         });
     }
 
-    public start() {
+    public override start() {
         for (const planet of this.planets) {
             planet.body.position.set(
                 Math.random() * 300 - 150,
@@ -240,32 +207,15 @@ export class ThreeBodiesGame {
                 Math.random() * 1 - 0.5
             );
         }
-
-        const loop = () => {
-            this.integrator.update((dt) => {
-                this.applyGravity(this.planets);
-                this.updateViewportToFit(this.planets);
-                for (const planet of this.planets) {
-                    planet.body.update(dt);
-                }
-                this.world.update(dt);
-                this.renderer.render(this.world);
-            });
-
-            this.renderer.render(this.world);
-            requestAnimationFrame(loop);
-        };
-
-        loop();
+        super.start();
     }
 
-    public resize(width: number, height: number) {
-        this.canvas.width = width;
-        this.canvas.height = height;
-        this.viewport.canvasSize.set(width, height);
+    protected override update(dt: number) {
+        this.applyGravity(this.planets);
+        this.updateViewportToFit(this.planets);
+        for (const planet of this.planets) {
+            planet.body.update(dt);
+        }
+        super.update(dt);
     }
-
-    public pause() {}
-
-    public resume() {}
 }
