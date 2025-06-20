@@ -3,6 +3,7 @@ import LayeredLayout from './LayeredLayout';
 import GameCanvas from './GameCanvas';
 import PauseMenu from './PauseMenu';
 import { DialogProvider, useDialogManager } from './DialogManager';
+import { Game } from '../game/Game';
 
 const InnerGame: React.FC = () => {
     const [paused, setPaused] = useState(false);
@@ -30,7 +31,17 @@ const InnerGame: React.FC = () => {
         };
     }, [hasDialog, showDialog, closeDialog]);
 
-    return <LayeredLayout layers={[<GameCanvas key="game" paused={paused} />]} />;
+    return (
+        <LayeredLayout
+            layers={[
+                <GameCanvas
+                    gameFactory={(canvas) => new Game(canvas)}
+                    key="game"
+                    paused={paused}
+                />,
+            ]}
+        />
+    );
 };
 
 const GameApp: React.FC = () => (

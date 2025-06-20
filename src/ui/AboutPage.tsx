@@ -1,8 +1,11 @@
 import React from 'react';
+import { ThreeBodiesGameApp } from '../threebodies/ThreeBodiesGameApp';
 
 const AboutPage: React.FC = () => (
     <div className="flex items-center justify-center h-screen">
-        <h1 className="text-4xl">The Drift</h1>
+        <div>
+            <ThreeBodiesGameApp />
+        </div>
     </div>
 );
 

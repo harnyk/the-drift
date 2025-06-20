@@ -22,15 +22,13 @@ export class Car extends Node {
     ) {
         super();
         this.body = new RigidBody2D(initialPosition, initialRotation, 1, 0.1);
-
+        
         this.renderable = new CarRenderable(this.body.position);
-        bindVec2(this.renderable, 'position').from(this.body, 'position');
-        bindScalar(this.renderable, 'angle').from(this.body, 'angle');
-
+        
         this.controller = new VehicleController(this.body);
         this.controller.setFriction(0.3);
         this.controller.setAngularFriction(1);
-
+        
         this.collider = new BoxCollisionBody(
             context,
             this.body.position,
@@ -38,17 +36,20 @@ export class Car extends Node {
             this.body.angle,
             'dynamic'
         );
+
+        this.add(this.body);
+        this.add(this.collider);
+        this.add(this.renderable);
+        this.add(this.controller);
+        
+        bindVec2(this.renderable, 'position').from(this.body, 'position');
+        bindScalar(this.renderable, 'angle').from(this.body, 'angle');
+
+        bindVec2(this.collider, 'position').from(this.body, 'position');
+        bindScalar(this.collider, 'angle').from(this.body, 'angle');
     }
 
     boost(k: number) {
         this.body.velocity.scale(k);
-    }
-
-    update(dt: number) {
-        this.collider.position.assign(this.body.position);
-        this.collider.angle = this.body.angle;
-
-        this.body.update(dt);
-        this.controller.update(dt);
     }
 }

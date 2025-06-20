@@ -1,7 +1,8 @@
+import { Node } from '../Node';
 import { IVec2D } from '../vec/IVec2D';
 import { ImmutableVec2D, Vec2D } from '../vec/Vec2D';
 
-export class RigidBody2D {
+export class RigidBody2D extends Node {
     readonly position = new Vec2D();
     readonly velocity = new Vec2D();
     readonly acceleration = new Vec2D();
@@ -15,6 +16,7 @@ export class RigidBody2D {
     momentOfInertia: number;
 
     constructor(position: IVec2D, angle = 0, mass = 1, momentOfInertia = 1) {
+        super();
         this.position.assign(position);
 
         this.angle = angle;

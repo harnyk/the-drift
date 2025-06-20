@@ -209,8 +209,8 @@ export class Game {
             this.world.add(b.renderable);
         }
 
-        this.world.add(this.car.renderable);
-        this.world.add(this.terrorist.renderable);
+        this.world.add(this.car);
+        this.world.add(this.terrorist);
         this.world.add(this.terroristEyes);
         this.world.add(new CompassRenderable());
         this.world.add(new SpeedometerRenderable(this.car.body));
@@ -245,11 +245,7 @@ export class Game {
             if (!this.paused) {
                 this.integrator.update((dt) => {
                     if (!this.gameState.isPlaying()) return;
-
                     this.applyMutualGravity();
-
-                    this.car.update(dt);
-                    this.terrorist.update(dt);
                     this.world.update(dt);
                     this.checkVictoryOrDefeat();
                 });

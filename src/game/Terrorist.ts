@@ -38,6 +38,7 @@ export class Terrorist extends Node {
             Terrorist.MASS,
             Terrorist.MOMENT_OF_INERTIA
         );
+        this.add(this.body);
         this.body.applyTorque(Terrorist.INITIAL_TORQUE);
 
         this.renderable = new RegularPolygonRenderable({
@@ -47,6 +48,7 @@ export class Terrorist extends Node {
             angle: angle,
             color: '#333',
         });
+        this.add(this.renderable);
         bindVec2(this.renderable, 'position').from(this.body, 'position');
         bindScalar(this.renderable, 'angle').from(this.body, 'angle');
 
@@ -58,6 +60,9 @@ export class Terrorist extends Node {
             angle,
             'dynamic'
         );
+        this.add(this.collider);
+        bindVec2(this.collider, 'position').from(this.body, 'position');
+        bindScalar(this.collider, 'angle').from(this.body, 'angle');
     }
 
     update(dt: number) {
@@ -72,8 +77,6 @@ export class Terrorist extends Node {
             this.#timeAccumulator = 0;
         }
 
-        this.collider.position.assign(this.body.position);
-        this.collider.angle = this.body.angle;
-        this.body.update(dt);
+        super.update(dt);
     }
 }

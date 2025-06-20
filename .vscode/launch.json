@@ -7,8 +7,15 @@
         {
             "type": "chrome",
             "request": "launch",
-            "name": "Launch Chrome against localhost",
+            "name": "TheDrift",
             "url": "http://localhost:5173",
+            "webRoot": "${workspaceFolder}"
+        },
+        {
+            "type": "chrome",
+            "request": "launch",
+            "name": "ThreeBodies",
+            "url": "http://localhost:5173/about",
             "webRoot": "${workspaceFolder}"
         }
     ]

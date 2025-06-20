@@ -1,5 +1,6 @@
 import React, { useEffect, useRef } from 'react';
-import { Game } from '../game/Game';
+import { IGame } from './IGame';
+// import { Game } from '../game/Game';
 
 /**
  * React wrapper that mounts the Game once and keeps it running
@@ -8,11 +9,15 @@ import { Game } from '../game/Game';
  */
 export interface GameCanvasProps {
     paused: boolean;
+    gameFactory: (canvas: HTMLCanvasElement) => IGame;
 }
 
-export const GameCanvas: React.FC<GameCanvasProps> = ({ paused }) => {
+export const GameCanvas: React.FC<GameCanvasProps> = ({
+    paused,
+    gameFactory,
+}) => {
     const canvasRef = useRef<HTMLCanvasElement | null>(null);
-    const gameRef = useRef<Game | null>(null);
+    const gameRef = useRef<IGame | null>(null);
 
     const resize = () => {
         const canvas = canvasRef.current;
@@ -35,7 +40,7 @@ export const GameCanvas: React.FC<GameCanvasProps> = ({ paused }) => {
             return;
         }
 
-        gameRef.current = new Game(canvas);
+        gameRef.current = gameFactory(canvas);
 
         resize();
         gameRef.current.start();

@@ -1,8 +1,9 @@
+import { Node } from '../Node';
 import { IVec2D } from '../vec/IVec2D';
 import { ImmutableVec2D, Vec2D } from '../vec/Vec2D';
 import { BodyType } from './BodyType';
 
-export abstract class CollisionBody {
+export abstract class CollisionBody extends Node{
     readonly position = new Vec2D();
     angle: number;
     type: BodyType;
@@ -11,6 +12,7 @@ export abstract class CollisionBody {
     protected readonly vertices: Vec2D[] = [];
 
     constructor(position: IVec2D, angle = 0, type: BodyType = 'dynamic') {
+        super();
         this.position.assign(position);
         this.angle = angle;
         this.type = type;

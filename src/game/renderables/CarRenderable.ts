@@ -5,7 +5,7 @@ import { Node } from '../../engine/Node';
 
 export class CarRenderable extends Node implements Renderable {
     readonly position: Vec2D = new Vec2D();
-    angle: number;
+    angle: number = 0;
 
     #wheelCoords = [
         Vec2D.set(new Vec2D(), 0.35, 0.3).toImmutable(),
@@ -16,13 +16,7 @@ export class CarRenderable extends Node implements Renderable {
 
     #wheelSize = Vec2D.set(new Vec2D(), 0.2, 0.1).toImmutable();
 
-    constructor(position: IVec2D, angle = 0) {
-        super();
-        this.position.assign(position);
-        this.angle = angle;
-    }
-
-    render(ctx: CanvasRenderingContext2D) {
+    render(ctx: CanvasRenderingContext2D): void {
         ctx.save();
         ctx.translate(this.position.x, this.position.y);
         ctx.rotate(this.angle);

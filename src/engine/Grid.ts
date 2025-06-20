@@ -4,37 +4,50 @@ import { Context } from './Context';
 import { Node } from './Node';
 
 export class Grid extends Node implements Renderable {
-    spacing: number;
-    color: string;
+    readonly baseSpacing: number;
+    readonly color: string;
 
     constructor(
         private readonly context: Context,
-        spacing = 1,
+        baseSpacing = 1,
         color = '#ddd'
     ) {
         super();
-        this.spacing = spacing;
+        this.baseSpacing = baseSpacing;
         this.color = color;
     }
 
     render(ctx: CanvasRenderingContext2D, viewport: Viewport): void {
         const bounds = viewport.getWorldBounds();
+        const zoom = viewport.zoom;
+
+        // Адаптивный шаг: кратен baseSpacing * 2^n
+        let adjustedSpacing = this.baseSpacing;
+        const screenSpacing = zoom * adjustedSpacing;
+
+        if (screenSpacing < 10) {
+            while (zoom * adjustedSpacing < 10) {
+                adjustedSpacing *= 2;
+            }
+        } else if (screenSpacing > 40) {
+            while (zoom * adjustedSpacing > 40 && adjustedSpacing > this.baseSpacing) {
+                adjustedSpacing /= 2;
+            }
+        }
 
         viewport.inWorldCoordinates(ctx, () => {
             ctx.beginPath();
-            for (
-                let x = Math.floor(bounds.minX);
-                x <= bounds.maxX;
-                x += this.spacing
-            ) {
+
+            const startX = Math.floor(bounds.minX / adjustedSpacing) * adjustedSpacing;
+            const endX = bounds.maxX;
+            for (let x = startX; x <= endX; x += adjustedSpacing) {
                 ctx.moveTo(x, bounds.minY);
                 ctx.lineTo(x, bounds.maxY);
             }
-            for (
-                let y = Math.floor(bounds.minY);
-                y <= bounds.maxY;
-                y += this.spacing
-            ) {
+
+            const startY = Math.floor(bounds.minY / adjustedSpacing) * adjustedSpacing;
+            const endY = bounds.maxY;
+            for (let y = startY; y <= endY; y += adjustedSpacing) {
                 ctx.moveTo(bounds.minX, y);
                 ctx.lineTo(bounds.maxX, y);
             }

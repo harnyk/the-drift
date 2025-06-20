@@ -1,7 +1,8 @@
+import { Node } from '../engine/Node';
 import { RigidBody2D } from '../engine/physics/RigidBody2D';
 import { Vec2D } from '../engine/vec/Vec2D';
 
-export class VehicleController {
+export class VehicleController extends Node {
     private body: RigidBody2D;
     private throttle = 0;
     private steering = 0;
@@ -14,6 +15,7 @@ export class VehicleController {
     velocityEpsilon = 0.5;
 
     constructor(body: RigidBody2D) {
+        super();
         this.body = body;
     }
 
