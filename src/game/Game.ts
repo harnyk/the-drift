@@ -15,6 +15,7 @@ import { SpeedometerRenderable } from './renderables/SpeedometerRenderable';
 import { TerroristEyesRenderable } from './renderables/TerroristEyesRenderable';
 import { TerroristIndicatorRenderable } from './renderables/TerroristIndicatorRenderable';
 import { Terrorist } from './Terrorist';
+import { GravitySystem } from '../engine/physics/GravitySystem';
 
 export class Game extends BaseGame {
     private controller: KeyboardControl;
@@ -24,6 +25,7 @@ export class Game extends BaseGame {
     private terrorist!: Terrorist;
     private terroristEyes!: TerroristEyesRenderable;
     private collisionDetector!: CollisionDetector;
+    private gravitySystem = new GravitySystem(this.context, 30);
 
     constructor(canvas: HTMLCanvasElement) {
         super(canvas);
@@ -116,26 +118,11 @@ export class Game extends BaseGame {
     }
 
     private applyMutualGravity() {
-        this.context.vectorPool.borrow((acquire) => {
-            const dir = acquire();
-            dir.assign(this.terrorist.body.position);
-            dir.sub(this.car.body.position);
-
-            const r = Math.max(dir.length, 2);
-            dir.normalize();
-
-            const G = 30;
-            const forceMagnitude =
-                (G * this.car.body.mass * this.terrorist.body.mass) / (r * r);
-            dir.scale(forceMagnitude);
-
-            this.car.body.applyForce(dir);
-
-            dir.scale(-1);
-            this.terrorist.body.applyForce(dir);
-        });
+        this.gravitySystem.applyMutualGravity(
+            this.car.body,
+            this.terrorist.body
+        );
     }
-
 
     private initCarAndTerrorist() {
         this.car = new Car(
@@ -216,7 +203,6 @@ export class Game extends BaseGame {
         this.collisionDetector.detect();
         super.frame();
     }
-
 
     private checkVictoryOrDefeat() {
         if (this.terroristGravityCenterAverager.count === 0) {
