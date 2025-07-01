@@ -13,20 +13,23 @@ const PauseMenu: React.FC<PauseMenuProps> = ({ onExit, dialogId, isTop }) => {
     const { showDialog, closeDialog } = useDialogManager();
     const options = [
         {
-            label: 'Show Dialog',
+            label: 'About',
             onSelect: () => {
                 showDialog((id, top) => (
-                    <Dialog title="Hello" onClose={() => closeDialog(id)} isTop={top}>
-                        hello world
+                    <Dialog
+                        title="About"
+                        onClose={() => closeDialog(id)}
+                        isTop={top}
+                    >
+                        <b>TheDrift</b>, (c) 2025{' '}
+                        <a
+                            target="_blank"
+                            href="https://github.com/harnyk/the-drift"
+                        >
+                            https://github.com/harnyk/the-drift
+                        </a>
                     </Dialog>
                 ));
-            },
-        },
-        {
-            label: 'Exit',
-            onSelect: () => {
-                console.log('Exit selected');
-                onExit();
             },
         },
     ];
@@ -40,8 +43,12 @@ const PauseMenu: React.FC<PauseMenuProps> = ({ onExit, dialogId, isTop }) => {
     }, [isTop]);
 
     return (
-        <Dialog title="Menu" onClose={() => closeDialog(dialogId)} isTop={isTop}>
-            <h3 className="text-red-600 font-mono text-lg mb-4">The Drift</h3>
+        <Dialog
+            title="The Drift"
+            onClose={() => closeDialog(dialogId)}
+            isTop={isTop}
+        >
+            <h3 className="text-red-600 font-mono text-lg mb-4">Paused</h3>
             {options.map((opt, idx) => (
                 <MenuOption
                     key={opt.label}
