@@ -1,10 +1,11 @@
 import { Context } from '../engine/Context';
+import { Node } from '../engine/Node';
 import { BoxCollisionBody } from '../engine/physics/BoxCollisionBody';
 import { CollisionBody } from '../engine/physics/CollisionBody';
 import { Vec2D } from '../engine/vec/Vec2D';
 import { RoadBlockRenderable } from './renderables/RoadBlockRenderable';
 
-export class Block {
+export class Block extends Node {
     readonly renderable: RoadBlockRenderable;
     readonly collider: CollisionBody;
 
@@ -21,6 +22,8 @@ export class Block {
         public goodColor: string,
         public badColor: string
     ) {
+        super();
+
         this.renderable = new RoadBlockRenderable(this.context, {
             position: this.position,
             angle: this.angle,
@@ -35,6 +38,9 @@ export class Block {
             this.angle,
             'static'
         );
+
+        this.add(this.renderable);
+        this.add(this.collider);
     }
 
     invert() {

@@ -2,9 +2,7 @@ import { BaseGame } from '../common/BaseGame';
 import { fromDeg } from '../engine/fromDeg';
 import { CollisionDetector } from '../engine/physics/CollisionDetector';
 import { Vec2D } from '../engine/vec/Vec2D';
-import { Vec2DAverager } from '../engine/Vec2DAverager';
 import { bindVec2 } from '../engine/bindVec2';
-import { Block } from './Block';
 import { Car } from './Car';
 import { KeyboardControl, KeyCodeWASD } from './controls/KeyboardControl';
 import { GameStateManager } from './GameStateManager';
@@ -16,16 +14,23 @@ import { TerroristEyesRenderable } from './renderables/TerroristEyesRenderable';
 import { TerroristIndicatorRenderable } from './renderables/TerroristIndicatorRenderable';
 import { Terrorist } from './Terrorist';
 import { GravitySystem } from '../engine/physics/GravitySystem';
+import { BlocksGroup } from './BlocksGroupNode';
+import { ConstantAttractor } from '../engine/ConstantAttractor';
+import { GravitySystemNode } from '../engine/physics/GravitySystemNode';
+import { NodeSet } from '../engine/NodeSet';
+import { RigidBody2D } from '../engine/physics/RigidBody2D';
 
 export class Game extends BaseGame {
     private controller: KeyboardControl;
-    private terroristGravityCenterAverager = new Vec2DAverager();
     private gameState = new GameStateManager();
     private car!: Car;
     private terrorist!: Terrorist;
     private terroristEyes!: TerroristEyesRenderable;
     private collisionDetector!: CollisionDetector;
     private gravitySystem = new GravitySystem(this.context, 30);
+    private blocksGroup: BlocksGroup = new BlocksGroup(this.context);
+    private attractor!: ConstantAttractor;
+    private gsnTerroristAndCar!: GravitySystemNode;
 
     constructor(canvas: HTMLCanvasElement) {
         super(canvas);
@@ -39,43 +44,34 @@ export class Game extends BaseGame {
         return controller;
     }
 
-    private createBlocks(): Block[] {
-        const distanceBetweenBlocks = 6;
-        const vertNumberOfBlocks = 5;
-        const horNumberOfBlocks = 5;
-
-        const blocks: Block[] = [];
-        for (let x = 0; x < horNumberOfBlocks; x++) {
-            for (let y = 0; y < vertNumberOfBlocks; y++) {
-                blocks.push(
-                    new Block(
-                        this.context,
-                        Vec2D.set(
-                            new Vec2D(),
-                            x * distanceBetweenBlocks,
-                            y * distanceBetweenBlocks + 5
-                        ),
-                        Vec2D.set(new Vec2D(), 0.5, 0.5),
-                        0,
-                        false,
-                        '#0a0',
-                        '#a00'
-                    )
-                );
-            }
-        }
-        return blocks;
-    }
-
     private initGameObjects() {
-        const roadBlocks = this.createBlocks();
-
-        this.initCollisionDetector(roadBlocks);
+        this.initCollisionDetector();
         this.initCarAndTerrorist();
         this.initTerroristEyes();
-        this.addRenderables(roadBlocks);
+        this.addRenderables();
+
+        this.initPhysics();
 
         this.setupControls();
+    }
+
+    private initPhysics() {
+        this.attractor = new ConstantAttractor({
+            target: this.terrorist.body,
+            getSourcePosition: () => this.blocksGroup.centerOfMassBody.position,
+            pullRate: 100,
+        });
+        this.world.add(this.attractor);
+
+        const nsTerroristAndCar = new NodeSet<RigidBody2D>();
+        nsTerroristAndCar.add(this.terrorist.body);
+        nsTerroristAndCar.add(this.car.body);
+
+        this.gsnTerroristAndCar = new GravitySystemNode(
+            this.gravitySystem,
+            nsTerroristAndCar
+        );
+        this.world.add(this.gsnTerroristAndCar);
     }
 
     private initTerroristEyes() {
@@ -89,21 +85,16 @@ export class Game extends BaseGame {
         );
     }
 
-    private initCollisionDetector(roadBlocks: Block[]) {
+    private initCollisionDetector() {
         this.collisionDetector = new CollisionDetector(this.context);
 
-        for (const block of roadBlocks) {
-            this.terroristGravityCenterAverager.add(block.collider.position);
-
+        for (const block of this.blocksGroup.blocks) {
             this.collisionDetector.addBody(block.collider, {
                 onCollisionStart: (body, other) => {
                     if (other === this.car.collider) {
                         if (block.isGood) {
-                            this.world.remove(block.renderable);
+                            this.blocksGroup.removeBlock(block);
                             this.collisionDetector.removeBody(body);
-                            this.terroristGravityCenterAverager.remove(
-                                body.position
-                            );
                         } else {
                             this.car.body.angularVelocity = 10;
                             this.car.body.velocity.normalize();
@@ -117,13 +108,6 @@ export class Game extends BaseGame {
         }
     }
 
-    private applyMutualGravity() {
-        this.gravitySystem.applyMutualGravity(
-            this.car.body,
-            this.terrorist.body
-        );
-    }
-
     private initCarAndTerrorist() {
         this.car = new Car(
             this.context,
@@ -134,8 +118,7 @@ export class Game extends BaseGame {
         this.terrorist = new Terrorist(
             this.context,
             Vec2D.set(new Vec2D(), 10, 10),
-            fromDeg(90),
-            this.terroristGravityCenterAverager
+            fromDeg(90)
         );
 
         this.collisionDetector.addBody(this.car.collider, {
@@ -151,14 +134,12 @@ export class Game extends BaseGame {
         this.collisionDetector.addBody(this.terrorist.collider);
     }
 
-    private addRenderables(blocks: Block[]) {
+    private addRenderables() {
         const grid = new CurvedGrid(this.context, 1, '#222');
         grid.setGravityWell(this.terrorist.body.position);
         this.world.add(grid);
 
-        for (const b of blocks) {
-            this.world.add(b.renderable);
-        }
+        this.world.add(this.blocksGroup);
 
         this.world.add(this.car);
         this.world.add(this.terrorist);
@@ -192,8 +173,9 @@ export class Game extends BaseGame {
     }
 
     protected override update(dt: number) {
-        if (!this.gameState.isPlaying()) return;
-        this.applyMutualGravity();
+        if (!this.gameState.isPlaying()) {
+            return;
+        }
         super.update(dt);
         this.checkVictoryOrDefeat();
     }
@@ -205,7 +187,7 @@ export class Game extends BaseGame {
     }
 
     private checkVictoryOrDefeat() {
-        if (this.terroristGravityCenterAverager.count === 0) {
+        if (this.blocksGroup.blocks.length === 0) {
             this.gameState.win();
             return;
         }
