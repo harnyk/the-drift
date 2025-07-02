@@ -22,12 +22,18 @@ import { RigidBody2D } from '../engine/physics/RigidBody2D';
 
 export class Game extends BaseGame {
     private controller: KeyboardControl;
+    private static readonly GRAVITATIONAL_CONSTANT = 30;
+    private static readonly TERRORIST_ATTRACTOR_PULL_RATE = 100;
+
     private gameState = new GameStateManager();
     private car!: Car;
     private terrorist!: Terrorist;
     private terroristEyes!: TerroristEyesRenderable;
     private collisionDetector!: CollisionDetector;
-    private gravitySystem = new GravitySystem(this.context, 30);
+    private gravitySystem = new GravitySystem(
+        this.context,
+        Game.GRAVITATIONAL_CONSTANT
+    );
     private blocksGroup: BlocksGroup = new BlocksGroup(this.context);
     private attractor!: ConstantAttractor;
     private gsnTerroristAndCar!: GravitySystemNode;
@@ -59,7 +65,7 @@ export class Game extends BaseGame {
         this.attractor = new ConstantAttractor({
             target: this.terrorist.body,
             getSourcePosition: () => this.blocksGroup.centerOfMassBody.position,
-            pullRate: 100,
+            pullRate: Game.TERRORIST_ATTRACTOR_PULL_RATE,
         });
         this.world.add(this.attractor);
 
