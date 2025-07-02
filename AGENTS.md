@@ -57,6 +57,24 @@ Marker interface for objects that expose a `render(ctx, viewport)` method.
 
 Marker interface for objects that expose an `update(dt)` method.
 
+#### `Grid.ts`
+
+Draws an adaptive background grid based on the viewport zoom level.
+
+#### `ConstantAttractor.ts`
+
+Scene node that applies a constant pulling force to a target body from a
+dynamic source position.
+
+#### `NodeSet.ts`
+
+Utility for keeping a set of `Node` references with automatic cleanup when
+items leave the scene graph.
+
+#### `Pool.ts`
+
+Generic object pool used by `Context` for temporary vector and matrix reuse.
+
 ---
 
 ### Physics — `src/engine/physics/`
@@ -76,6 +94,20 @@ Base class for collision detection with SAT. Implemented by:
 
 Performs pairwise collision detection with SAT and triggers collision events.
 Maintains contact state between frames.
+
+#### `GravitySystem.ts`
+
+Calculates Newtonian attraction between `RigidBody2D` instances with a softening
+factor to avoid singularities.
+
+#### `GravitySystemNode.ts`
+
+Node that iterates over a `NodeSet` of bodies each frame and applies mutual
+gravity via `GravitySystem`.
+
+#### `BodyType.ts`
+
+Type alias for body kinds: `'static'` or `'dynamic'`.
 
 ---
 
@@ -100,13 +132,19 @@ custom logic.
 
 #### `Game.ts`
 
-Extends `BaseGame`. Sets up car, blocks and Terrorist, handles collisions and
-camera updates. Game state management lives here.
+Extends `BaseGame`. Sets up car, blocks and Terrorist, handles collisions,
+camera updates and the gravity systems. Uses a `ConstantAttractor` to pull the
+Terrorist towards the block group's center. Game state management lives here.
 
 #### `Block.ts`
 
 Field squares (green = good, red = bad). Each is a renderable + static collider.
 Can be inverted by the Terrorist.
+
+#### `BlocksGroupNode.ts`
+
+Container node that spawns the grid of `Block` instances and maintains their
+center of mass via an internal `RigidBody2D`.
 
 #### `Car.ts`
 
