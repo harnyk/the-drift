@@ -1,11 +1,14 @@
 import { BaseGame } from '../common/BaseGame';
 import { Grid } from '../engine/Grid';
+import { GravitySystem } from '../engine/physics/GravitySystem';
 import { Planet } from './Planet';
 
 export class ThreeBodiesGame extends BaseGame {
     private grid = new Grid(this.context, 10);
 
     private planets: Planet[] = [];
+
+    private gravitySystem = new GravitySystem(this.context, 10, 0.2);
 
     constructor(canvas: HTMLCanvasElement) {
         super(canvas);
@@ -47,38 +50,19 @@ export class ThreeBodiesGame extends BaseGame {
     }
 
     private applyGravity(planets: Planet[]) {
-        this.context.vectorPool.borrow((acquire) => {
-            for (let i = 0; i < planets.length; i++) {
-                const pi = planets[i];
-                for (let j = i + 1; j < planets.length; j++) {
-                    const pj = planets[j];
-                    const dir = acquire();
-
-                    dir.assign(pj.body.position);
-                    dir.sub(pi.body.position);
-
-                    const dist = Math.max(dir.length, 0.5);
-                    dir.normalize();
-
-                    const G = 10;
-                    const f = (G * pi.body.mass * pj.body.mass) / (dist * dist);
-
-                    const force = acquire();
-                    force.assign(dir);
-                    force.scale(f);
-
-                    pi.body.applyForce(force);
-                    force.scale(-1);
-                    pj.body.applyForce(force);
-                }
+        for (let i = 0; i < planets.length; i++) {
+            const pi = planets[i];
+            for (let j = i + 1; j < planets.length; j++) {
+                const pj = planets[j];
+                this.gravitySystem.applyMutualGravity(pi.body, pj.body);
             }
-        });
+        }
     }
 
     private updateViewportToFit(planets: Planet[]) {
         this.context.vectorPool.borrow((acquire) => {
             // Exponent of mass
-            const gamma = 2;
+            const gamma = 8;
 
             const weightedCenter = acquire();
             weightedCenter.zero();
@@ -97,7 +81,7 @@ export class ThreeBodiesGame extends BaseGame {
                 const dx = p.body.position.x - weightedCenter.x;
                 const dy = p.body.position.y - weightedCenter.y;
                 const distSq = dx * dx + dy * dy;
-                const weight = Math.pow(p.body.mass, gamma) / (1 + distSq);
+                const weight = Math.pow(p.body.mass / 10000, gamma) / (1 + distSq);
                 return { planet: p, weight };
             });
 
@@ -105,7 +89,7 @@ export class ThreeBodiesGame extends BaseGame {
 
             // const coreCount = Math.floor(planets.length * 0.1);
             // Number of most interesting planets
-            const coreCount = 6
+            const coreCount = 4;
             const core = weighted.slice(0, coreCount).map((e) => e.planet);
 
             const bounds = {
